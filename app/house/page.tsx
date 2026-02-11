@@ -1,27 +1,33 @@
 export default function HouseEntry() {
   return (
-    <main className="min-h-screen bg-white text-gray-900">
-      <div className="mx-auto max-w-2xl px-6 py-32 text-center">
+    <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-sky-50 to-white text-slate-800">
+      <div className="mx-auto max-w-2xl px-6 py-24">
 
-        <h1 className="text-3xl font-semibold leading-tight mb-6">
-          Thinking about buying your first home?
-        </h1>
+        <div className="rounded-2xl bg-white p-10 shadow-sm">
+          <div className="space-y-8">
 
-        <p className="text-lg text-gray-600 mb-10">
-          This helps you figure out where you are, what usually comes next,
-          and what you don’t need to worry about yet.
-        </p>
+            <h1 className="text-3xl font-semibold leading-tight">
+              Thinking about buying your first home?
+            </h1>
 
-        <a
-  href="/house/questions"
-  className="inline-block rounded-md bg-gray-900 px-6 py-3 text-white text-base font-medium hover:bg-gray-800"
->
-  Help me get oriented
-</a>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              This helps you get oriented — where you are right now,
+              what usually comes next, and what you don’t need to worry about yet.
+            </p>
 
-        <p className="mt-6 text-sm text-gray-500">
-          No sign-up. No sales. Just clarity.
-        </p>
+            <a
+              href="/house/questions"
+              className="inline-flex items-center justify-center mt-10 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 transition-colors"
+            >
+              Help me get oriented
+            </a>
+
+            <p className="text-sm text-slate-500">
+              No sign-up. No sales. Just clarity.
+            </p>
+
+          </div>
+        </div>
 
       </div>
     </main>
