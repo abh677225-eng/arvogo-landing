@@ -188,7 +188,11 @@ export default function HousePosition() {
           <p className="text-sm text-slate-500">
             This doesn’t decide anything for you. It just helps you see where you are.
           </p>
-
+href="/house/nextstep"
+  className="inline-flex items-center justify-center mt-4 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 transition-colors"
+>
+  See who can help with your next step
+</a>
         </div>
       </div>
     </main>
