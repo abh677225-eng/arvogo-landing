@@ -40,9 +40,11 @@ const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
   },
   "in-process": {
     heading: "The people you need in your corner ⚡",
-    subtext: "At this stage you'll likely need all three. A broker for your loan, a buyers agent to help find and bid on the right home, and a conveyancer to handle the legal side before you exchange contracts.",
+    subtext: "At this stage you'll likely need all four. A broker for your loan, a buyers agent to help find and secure the right home, a conveyancer for the legal side, and a building & pest inspector before you sign anything.",
   },
 };
+
+type CategoryKey = "broker" | "buyers-agent" | "conveyancer" | "building-pest";
 
 type Provider = {
   name: string;
@@ -50,77 +52,121 @@ type Provider = {
   title: string;
   blurb: string;
   tag: string;
-  category: "broker" | "buyers-agent" | "conveyancer";
+  category: CategoryKey;
 };
 
-const BROKERS: Provider[] = [
-  {
-    name: "Sarah Mitchell",
-    initials: "SM",
-    title: "Mortgage Broker · Melbourne",
-    blurb: "Sarah works with first home buyers who aren't sure where to start. She's known for making the whole process feel less overwhelming — no jargon, no rush, just clear guidance.",
-    tag: "🏠 First home buyers",
-    category: "broker",
-  },
-  {
-    name: "James Okafor",
-    initials: "JO",
-    title: "Mortgage Broker · Melbourne & surrounds",
-    blurb: "James specialises in helping buyers understand their real borrowing position early — before they start looking at homes. He's direct, thorough, and easy to talk to.",
-    tag: "💡 Borrowing clarity",
-    category: "broker",
-  },
-];
-
-const BUYERS_AGENTS: Provider[] = [
-  {
-    name: "Claire Andersen",
-    initials: "CA",
-    title: "Buyers Agent · Melbourne",
-    blurb: "Claire searches, evaluates and bids on properties on your behalf — so you're not doing it alone. Particularly useful if you're time-poor or unfamiliar with the area.",
-    tag: "🔍 Property search",
-    category: "buyers-agent",
-  },
-  {
-    name: "David Nguyen",
-    initials: "DN",
-    title: "Buyers Agent · Melbourne & surrounds",
-    blurb: "David specialises in helping buyers avoid overpaying at auction. He brings local market knowledge and negotiation experience that most first-time buyers don't have on their own.",
-    tag: "🏆 Auction specialist",
-    category: "buyers-agent",
-  },
-];
-
-const CONVEYANCERS: Provider[] = [
-  {
-    name: "Mia Torres",
-    initials: "MT",
-    title: "Conveyancer · Victoria",
-    blurb: "Mia handles the legal transfer of the property — reviewing contracts, managing settlement, and making sure everything is in order before you sign anything binding.",
-    tag: "📋 Contracts & settlement",
-    category: "conveyancer",
-  },
-];
-
-const CATEGORY_INFO: Record<string, { emoji: string; title: string; what: string; when: string }> = {
+const CATEGORY_INFO: Record<CategoryKey, {
+  emoji: string;
+  title: string;
+  what: string;
+  when: string;
+  cost: string;
+  costType: "free" | "paid";
+  avatarGradient: string;
+}> = {
   broker: {
     emoji: "🏦",
     title: "Mortgage broker",
-    what: "Finds you the right loan from dozens of lenders. Free to use — paid by the bank, not you.",
+    what: "Finds you the right loan from dozens of lenders and handles the application on your behalf.",
     when: "First step financially. Worth talking to before you start seriously looking at homes.",
+    cost: "Free to use — paid by the lender, not you",
+    costType: "free",
+    avatarGradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
   },
   "buyers-agent": {
     emoji: "🔍",
     title: "Buyers agent",
-    what: "Searches, evaluates and bids on properties on your behalf. Paid by you, not the vendor.",
+    what: "Searches, evaluates and bids on properties on your behalf. Works for you, not the vendor.",
     when: "Useful once you know your budget and target area. Particularly valuable at auction.",
+    cost: "Typically $8,000–$20,000 flat or 1–2.5% of purchase price · Paid by you",
+    costType: "paid",
+    avatarGradient: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
   },
   conveyancer: {
     emoji: "📋",
     title: "Conveyancer",
-    what: "Handles the legal transfer of property — contracts, title checks, and settlement.",
-    when: "You need one before you exchange contracts. Not urgent until you're close to buying.",
+    what: "Handles the legal transfer of property — reviewing contracts, title checks, and settlement.",
+    when: "You need one before you exchange contracts. Essential, not optional.",
+    cost: "Typically $800–$2,000 · Paid by you",
+    costType: "paid",
+    avatarGradient: "linear-gradient(135deg, #10b981, #34d399)",
   },
+  "building-pest": {
+    emoji: "🔬",
+    title: "Building & pest inspector",
+    what: "Inspects the property for structural issues, defects, and pest activity before you commit.",
+    when: "Get one done before you exchange contracts — problems found after are your problem.",
+    cost: "Typically $400–$800 · Paid by you",
+    costType: "paid",
+    avatarGradient: "linear-gradient(135deg, #f59e0b, #fbbf24)",
+  },
+};
+
+const PROVIDERS: Record<CategoryKey, Provider[]> = {
+  broker: [
+    {
+      name: "Sarah Mitchell",
+      initials: "SM",
+      title: "Mortgage Broker · Melbourne",
+      blurb: "Sarah works with first home buyers who aren't sure where to start. She's known for making the whole process feel less overwhelming — no jargon, no rush, just clear guidance.",
+      tag: "🏠 First home buyers",
+      category: "broker",
+    },
+    {
+      name: "James Okafor",
+      initials: "JO",
+      title: "Mortgage Broker · Melbourne & surrounds",
+      blurb: "James specialises in helping buyers understand their real borrowing position early — before they start looking at homes. Direct, thorough, and easy to talk to.",
+      tag: "💡 Borrowing clarity",
+      category: "broker",
+    },
+  ],
+  "buyers-agent": [
+    {
+      name: "Claire Andersen",
+      initials: "CA",
+      title: "Buyers Agent · Melbourne",
+      blurb: "Claire searches, evaluates and bids on properties on your behalf — so you're not doing it alone. Particularly useful if you're time-poor or unfamiliar with the area.",
+      tag: "🔍 Property search",
+      category: "buyers-agent",
+    },
+    {
+      name: "David Nguyen",
+      initials: "DN",
+      title: "Buyers Agent · Melbourne & surrounds",
+      blurb: "David specialises in helping buyers avoid overpaying at auction. He brings local market knowledge and negotiation experience that most first-time buyers don't have.",
+      tag: "🏆 Auction specialist",
+      category: "buyers-agent",
+    },
+  ],
+  conveyancer: [
+    {
+      name: "Mia Torres",
+      initials: "MT",
+      title: "Conveyancer · Victoria",
+      blurb: "Mia handles the legal transfer of the property — reviewing contracts, managing settlement, and making sure everything is in order before you sign anything binding.",
+      tag: "📋 Contracts & settlement",
+      category: "conveyancer",
+    },
+  ],
+  "building-pest": [
+    {
+      name: "Rob Callahan",
+      initials: "RC",
+      title: "Building & Pest Inspector · Melbourne",
+      blurb: "Rob provides thorough pre-purchase inspections covering structural integrity, defects, and pest activity. Clear written reports with photos, usually within 24 hours.",
+      tag: "🏗️ Pre-purchase inspections",
+      category: "building-pest",
+    },
+    {
+      name: "Yuki Tanaka",
+      initials: "YT",
+      title: "Building & Pest Inspector · Victoria-wide",
+      blurb: "Yuki is known for finding issues other inspectors miss. Particularly experienced with older Melbourne homes and properties with complex structures.",
+      tag: "🔎 Detailed inspections",
+      category: "building-pest",
+    },
+  ],
 };
 
 const PROPERTY_RESOURCES = [
@@ -129,70 +175,69 @@ const PROPERTY_RESOURCES = [
     emoji: "🏘️",
     desc: "Australia's largest property listing site. Best for browsing active listings.",
     url: "https://www.realestate.com.au",
-    showFrom: ["preparing", "in-process"],
+    showFrom: ["preparing", "in-process"] as PositionKey[],
   },
   {
     name: "domain.com.au",
     emoji: "🏡",
     desc: "Strong coverage across major cities. Good for suburb research and price guides.",
     url: "https://www.domain.com.au",
-    showFrom: ["preparing", "in-process"],
+    showFrom: ["preparing", "in-process"] as PositionKey[],
   },
   {
     name: "homely.com.au",
     emoji: "🗺️",
-    desc: "Neighbourhood insights and reviews from locals. Useful for understanding an area before committing.",
+    desc: "Neighbourhood insights and reviews from locals. Useful for understanding an area.",
     url: "https://www.homely.com.au",
-    showFrom: ["in-process"],
+    showFrom: ["in-process"] as PositionKey[],
   },
   {
     name: "onthehouse.com.au",
     emoji: "📊",
     desc: "Historical sold prices and property reports. Helps you avoid overpaying.",
     url: "https://www.onthehouse.com.au",
-    showFrom: ["in-process"],
+    showFrom: ["in-process"] as PositionKey[],
   },
 ];
 
 type LeadForm = { name: string; email: string; phone: string; message: string };
 type SubmitState = "idle" | "submitting" | "done";
 
-function CategoryBadge({ category }: { category: string }) {
-  const info = CATEGORY_INFO[category];
+function CostBadge({ cost, costType }: { cost: string; costType: "free" | "paid" }) {
   return (
     <div style={{
-      background: "rgba(238,242,255,0.6)", borderRadius: 12,
-      padding: "8px 12px", marginBottom: 6,
-      border: "1px solid rgba(199,210,254,0.4)",
-      display: "flex", alignItems: "center", gap: 8,
+      display: "inline-flex", alignItems: "center", gap: 5,
+      background: costType === "free" ? "#f0fdf4" : "#fff7ed",
+      border: `1px solid ${costType === "free" ? "#bbf7d0" : "#fed7aa"}`,
+      borderRadius: 99, padding: "3px 10px",
     }}>
-      <span style={{ fontSize: 16 }}>{info.emoji}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: "#6366f1" }}>{info.title}</span>
+      <span style={{ fontSize: 11 }}>{costType === "free" ? "✓" : "💰"}</span>
+      <span style={{
+        fontSize: 11, fontWeight: 600,
+        color: costType === "free" ? "#16a34a" : "#ea580c",
+      }}>{cost}</span>
     </div>
   );
 }
 
 function ProviderCard({ provider, onConnect }: { provider: Provider; onConnect: (p: Provider) => void }) {
+  const info = CATEGORY_INFO[provider.category];
   return (
     <div style={{
       background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)",
-      borderRadius: 18, border: "1px solid rgba(255,255,255,0.9)",
-      padding: "1.1rem 1.25rem",
-      boxShadow: "0 2px 16px rgba(99,102,241,0.04)",
+      borderRadius: 16, border: "1px solid rgba(255,255,255,0.9)",
+      padding: "1rem 1.1rem",
+      boxShadow: "0 2px 12px rgba(99,102,241,0.04)",
     }}>
-      <div style={{ display: "flex", gap: 12, marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
         <div style={{
-          width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-          background: provider.category === "broker"
-            ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-            : provider.category === "buyers-agent"
-            ? "linear-gradient(135deg, #0ea5e9, #38bdf8)"
-            : "linear-gradient(135deg, #10b981, #34d399)",
+          width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
+          background: info.avatarGradient,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 12, fontWeight: 700, color: "#fff",
         }}>{provider.initials}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: 0 }}>{provider.name}</p>
             <span style={{
               fontSize: 10, padding: "2px 7px", borderRadius: 99,
@@ -216,7 +261,10 @@ function ProviderCard({ provider, onConnect }: { provider: Provider; onConnect: 
           border: "1.5px solid rgba(99,102,241,0.2)",
           color: "#4338ca", fontSize: 12, fontWeight: 600,
           cursor: "pointer", fontFamily: "inherit",
+          transition: "all 0.15s ease",
         }}
+        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, #e0e7ff, #c7d2fe)"}
+        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, #eef2ff, #e0e7ff)"}
       >
         Connect with {provider.name.split(" ")[0]} 👋
       </button>
@@ -225,17 +273,16 @@ function ProviderCard({ provider, onConnect }: { provider: Provider; onConnect: 
 }
 
 function CategorySection({
-  category,
-  providers,
+  categoryKey,
   position,
   onConnect,
 }: {
-  category: string;
-  providers: Provider[];
+  categoryKey: CategoryKey;
   position: PositionKey;
   onConnect: (p: Provider) => void;
 }) {
-  const info = CATEGORY_INFO[category];
+  const info = CATEGORY_INFO[categoryKey];
+  const providers = PROVIDERS[categoryKey];
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -245,20 +292,21 @@ function CategorySection({
       padding: "1.25rem 1.5rem", marginBottom: "1rem",
       boxShadow: "0 4px 24px rgba(99,102,241,0.05)",
     }}>
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: "0.75rem" }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-          background: category === "broker"
-            ? "linear-gradient(135deg, #eef2ff, #e0e7ff)"
-            : category === "buyers-agent"
-            ? "linear-gradient(135deg, #e0f2fe, #bae6fd)"
-            : "linear-gradient(135deg, #dcfce7, #bbf7d0)",
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+          width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+          background: categoryKey === "broker" ? "linear-gradient(135deg, #eef2ff, #e0e7ff)"
+            : categoryKey === "buyers-agent" ? "linear-gradient(135deg, #e0f2fe, #bae6fd)"
+            : categoryKey === "conveyancer" ? "linear-gradient(135deg, #dcfce7, #bbf7d0)"
+            : "linear-gradient(135deg, #fef3c7, #fde68a)",
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
         }}>{info.emoji}</div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 2px" }}>{info.title}</p>
-          <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{info.what}</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 4px" }}>{info.title}</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5 }}>{info.what}</p>
+          <CostBadge cost={info.cost} costType={info.costType} />
         </div>
       </div>
 
@@ -274,7 +322,7 @@ function CategorySection({
         </p>
       </div>
 
-      {/* Toggle providers */}
+      {/* Toggle */}
       <button
         onClick={() => setExpanded(!expanded)}
         style={{
@@ -291,7 +339,7 @@ function CategorySection({
         {expanded ? `Hide ${info.title}s ↑` : `See available ${info.title}s ↓`}
       </button>
 
-      {/* Provider cards */}
+      {/* Providers */}
       {expanded && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: "0.75rem" }}>
           {providers.map(p => (
@@ -306,7 +354,6 @@ function CategorySection({
 function PropertyResources({ position }: { position: PositionKey }) {
   const resources = PROPERTY_RESOURCES.filter(r => r.showFrom.includes(position));
   if (resources.length === 0) return null;
-
   const isFullList = position === "in-process";
 
   return (
@@ -316,14 +363,14 @@ function PropertyResources({ position }: { position: PositionKey }) {
       padding: "1.25rem 1.5rem", marginBottom: "1rem",
       boxShadow: "0 4px 24px rgba(99,102,241,0.05)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.5rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "0.75rem" }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          width: 44, height: 44, borderRadius: 14, flexShrink: 0,
           background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
         }}>🔎</div>
         <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>Where to search for homes</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 2px" }}>Where to search for homes</p>
           <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>
             {isFullList
               ? "The main platforms Australians use to find and research properties."
@@ -332,7 +379,7 @@ function PropertyResources({ position }: { position: PositionKey }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "0.75rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {resources.map(r => (
           <a
             key={r.name}
@@ -357,7 +404,7 @@ function PropertyResources({ position }: { position: PositionKey }) {
               <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{r.name}</p>
               <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{r.desc}</p>
             </div>
-            <span style={{ fontSize: 12, color: "#94a3b8" }}>↗</span>
+            <span style={{ fontSize: 14, color: "#94a3b8" }}>↗</span>
           </a>
         ))}
       </div>
@@ -367,7 +414,6 @@ function PropertyResources({ position }: { position: PositionKey }) {
 
 function LeadModal({
   provider,
-  position,
   onClose,
   submitState,
   onSubmit,
@@ -375,13 +421,13 @@ function LeadModal({
   setForm,
 }: {
   provider: Provider;
-  position: PositionKey;
   onClose: () => void;
   submitState: SubmitState;
   onSubmit: () => void;
   form: LeadForm;
   setForm: (f: LeadForm) => void;
 }) {
+  const info = CATEGORY_INFO[provider.category];
   return (
     <div
       onClick={onClose}
@@ -424,13 +470,28 @@ function LeadModal({
           </div>
         ) : (
           <>
+            {/* Provider info in modal */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.25rem", padding: "10px 12px", background: "#f8fafc", borderRadius: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                background: info.avatarGradient,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, fontWeight: 700, color: "#fff",
+              }}>{provider.initials}</div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{provider.name}</p>
+                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{provider.title}</p>
+              </div>
+            </div>
+
             <h2 style={{
               fontFamily: "'DM Serif Display', serif",
-              fontSize: "1.4rem", fontWeight: 400, color: "#1e293b", marginBottom: 4,
-            }}>Connect with {provider.name.split(" ")[0]}</h2>
-            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: "1.5rem" }}>
+              fontSize: "1.35rem", fontWeight: 400, color: "#1e293b", marginBottom: 4,
+            }}>Request an introduction</h2>
+            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: "1.25rem" }}>
               No obligation. Just a relaxed introductory chat.
             </p>
+
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1rem" }}>
               {[
                 { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
@@ -450,6 +511,8 @@ function LeadModal({
                       fontFamily: "inherit", background: "#f8fafc",
                       outline: "none", boxSizing: "border-box",
                     }}
+                    onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                    onBlur={e => e.target.style.borderColor = "#e2e8f0"}
                   />
                 </div>
               ))}
@@ -466,9 +529,12 @@ function LeadModal({
                     fontFamily: "inherit", background: "#f8fafc",
                     outline: "none", resize: "none", boxSizing: "border-box",
                   }}
+                  onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
                 />
               </div>
             </div>
+
             <button
               onClick={onSubmit}
               disabled={!form.name.trim() || !form.email.trim() || submitState === "submitting"}
@@ -478,6 +544,7 @@ function LeadModal({
                 border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
                 cursor: "pointer", fontFamily: "inherit", marginBottom: 8,
                 opacity: !form.name.trim() || !form.email.trim() ? 0.5 : 1,
+                transition: "opacity 0.15s ease",
               }}
             >
               {submitState === "submitting" ? "Sending... ⏳" : "Send introduction request ✦"}
@@ -520,7 +587,12 @@ export default function HouseNextStep() {
     await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, provider: selectedProvider?.name, position }),
+      body: JSON.stringify({
+        ...form,
+        provider: selectedProvider?.name,
+        category: selectedProvider?.category,
+        position,
+      }),
     });
     setSubmitState("done");
   }
@@ -531,10 +603,10 @@ export default function HouseNextStep() {
     setForm({ name: "", email: "", phone: "", message: "" });
   }
 
-  // Determine which categories to show based on position
   const showBrokers = true;
   const showBuyersAgents = position === "preparing" || position === "in-process";
   const showConveyancers = position === "in-process";
+  const showBuildingPest = position === "in-process";
 
   return (
     <main style={{
@@ -557,7 +629,7 @@ export default function HouseNextStep() {
           display: "flex", alignItems: "center", gap: 6, padding: 0,
         }}>← Back</button>
 
-        {/* Intro */}
+        {/* Intro card */}
         <div style={{
           background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
           borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
@@ -576,40 +648,16 @@ export default function HouseNextStep() {
           <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{intro.subtext}</p>
         </div>
 
-        {/* Brokers — always shown */}
-        {showBrokers && (
-          <CategorySection
-            category="broker"
-            providers={BROKERS}
-            position={position}
-            onConnect={handleConnect}
-          />
-        )}
-
-        {/* Buyers agents — preparing + in-process */}
-        {showBuyersAgents && (
-          <CategorySection
-            category="buyers-agent"
-            providers={BUYERS_AGENTS}
-            position={position}
-            onConnect={handleConnect}
-          />
-        )}
-
-        {/* Conveyancers — in-process only */}
-        {showConveyancers && (
-          <CategorySection
-            category="conveyancer"
-            providers={CONVEYANCERS}
-            position={position}
-            onConnect={handleConnect}
-          />
-        )}
+        {/* Category sections — position aware */}
+        {showBrokers && <CategorySection categoryKey="broker" position={position} onConnect={handleConnect} />}
+        {showBuyersAgents && <CategorySection categoryKey="buyers-agent" position={position} onConnect={handleConnect} />}
+        {showConveyancers && <CategorySection categoryKey="conveyancer" position={position} onConnect={handleConnect} />}
+        {showBuildingPest && <CategorySection categoryKey="building-pest" position={position} onConnect={handleConnect} />}
 
         {/* Property search resources */}
         <PropertyResources position={position} />
 
-        {/* Soft footer */}
+        {/* Soft exit */}
         <div style={{
           background: "rgba(255,255,255,0.7)", borderRadius: 16,
           padding: "1rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)",
@@ -637,7 +685,6 @@ export default function HouseNextStep() {
       {selectedProvider && (
         <LeadModal
           provider={selectedProvider}
-          position={position}
           onClose={() => setSelectedProvider(null)}
           submitState={submitState}
           onSubmit={handleSubmit}
