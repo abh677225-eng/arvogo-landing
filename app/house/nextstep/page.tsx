@@ -39,8 +39,8 @@ const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
     subtext: "At this stage, a broker can confirm your borrowing position, and a buyers agent can help you understand what to look for. Neither requires a commitment — just a conversation.",
   },
   "in-process": {
-    heading: "The people you need in your corner ⚡",
-    subtext: "At this stage you'll likely need all four. A broker for your loan, a buyers agent to help find and secure the right home, a conveyancer for the legal side, and a building & pest inspector before you sign anything.",
+    heading: "The people worth knowing about now ⚡",
+    subtext: "A broker and conveyancer are essential. A building & pest inspector is strongly recommended before you sign anything. A buyers agent is optional — useful if you want support finding and bidding on the right home.",
   },
 };
 
@@ -63,6 +63,8 @@ const CATEGORY_INFO: Record<CategoryKey, {
   cost: string;
   costType: "free" | "paid";
   avatarGradient: string;
+  status: "essential" | "optional" | "recommended";
+  statusNote: string;
 }> = {
   broker: {
     emoji: "🏦",
@@ -72,6 +74,8 @@ const CATEGORY_INFO: Record<CategoryKey, {
     cost: "Free to use — paid by the lender, not you",
     costType: "free",
     avatarGradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    status: "essential",
+    statusNote: "You'll need one to get a loan",
   },
   "buyers-agent": {
     emoji: "🔍",
@@ -81,6 +85,8 @@ const CATEGORY_INFO: Record<CategoryKey, {
     cost: "Typically $8,000–$20,000 flat or 1–2.5% of purchase price · Paid by you",
     costType: "paid",
     avatarGradient: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
+    status: "optional",
+    statusNote: "Many buyers find homes without one",
   },
   conveyancer: {
     emoji: "📋",
@@ -90,6 +96,8 @@ const CATEGORY_INFO: Record<CategoryKey, {
     cost: "Typically $800–$2,000 · Paid by you",
     costType: "paid",
     avatarGradient: "linear-gradient(135deg, #10b981, #34d399)",
+    status: "essential",
+    statusNote: "Legally required to settle",
   },
   "building-pest": {
     emoji: "🔬",
@@ -99,6 +107,8 @@ const CATEGORY_INFO: Record<CategoryKey, {
     cost: "Typically $400–$800 · Paid by you",
     costType: "paid",
     avatarGradient: "linear-gradient(135deg, #f59e0b, #fbbf24)",
+    status: "recommended",
+    statusNote: "Skipping this is a costly risk",
   },
 };
 
@@ -304,7 +314,28 @@ function CategorySection({
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
         }}>{info.emoji}</div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 4px" }}>{info.title}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{info.title}</p>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+              background: info.status === "essential" ? "#f0fdf4"
+                : info.status === "optional" ? "#f8fafc"
+                : "#fffbeb",
+              color: info.status === "essential" ? "#16a34a"
+                : info.status === "optional" ? "#64748b"
+                : "#d97706",
+              border: `1px solid ${info.status === "essential" ? "#bbf7d0"
+                : info.status === "optional" ? "#e2e8f0"
+                : "#fde68a"}`,
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.04em",
+            }}>
+              {info.status === "essential" ? "✓ Essential"
+                : info.status === "optional" ? "Optional"
+                : "⚠ Recommended"}
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 2px", fontStyle: "italic" }}>{info.statusNote}</p>
           <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5 }}>{info.what}</p>
           <CostBadge cost={info.cost} costType={info.costType} />
         </div>
