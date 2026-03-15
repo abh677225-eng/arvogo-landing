@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 type StoredState = {
@@ -11,6 +11,7 @@ type StoredState = {
 const questions = [
   {
     text: "Why are you thinking about buying a house?",
+    emoji: "🏠",
     options: [
       "I want something more permanent",
       "Something in my life is changing",
@@ -20,6 +21,7 @@ const questions = [
   },
   {
     text: "Does buying feel time-sensitive right now?",
+    emoji: "⏳",
     options: [
       "No — I'm just exploring",
       "A little — there's a loose timeline",
@@ -29,6 +31,7 @@ const questions = [
   },
   {
     text: "How settled does the rest of your life feel right now?",
+    emoji: "🌿",
     options: [
       "Pretty settled",
       "In transition",
@@ -38,6 +41,7 @@ const questions = [
   },
   {
     text: "How far have you gone so far?",
+    emoji: "📍",
     options: [
       "I haven't started yet",
       "I've been browsing a bit",
@@ -49,28 +53,29 @@ const questions = [
 
 export default function HouseQuestions() {
   const router = useRouter();
-
   const [answers, setAnswers] = useState<(string | null)[]>(
     Array(questions.length).fill(null)
   );
   const [index, setIndex] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [visible, setVisible] = useState(true);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("houseQuestionState");
     if (!raw) return;
     const parsed: StoredState = JSON.parse(raw);
-    // Only restore if genuinely mid-flow, not at the end
     if (parsed.index < questions.length - 1) {
       setAnswers(parsed.answers);
       setIndex(parsed.index);
     } else {
-      // Clear stale completed state so flow starts fresh
       sessionStorage.removeItem("houseQuestionState");
     }
   }, []);
 
   const q = questions[index];
-  const selected = answers[index];
   const progress = ((index + 1) / questions.length) * 100;
 
   function persist(nextAnswers: (string | null)[], nextIndex: number) {
@@ -81,89 +86,247 @@ export default function HouseQuestions() {
   }
 
   function advance(option: string) {
-    const nextAnswers = [...answers];
-    nextAnswers[index] = option;
+    if (animating) return;
+    setSelectedOption(option);
 
-    if (index < questions.length - 1) {
-      const nextIndex = index + 1;
-      setAnswers(nextAnswers);
-      setIndex(nextIndex);
-      persist(nextAnswers, nextIndex);
-    } else {
-      sessionStorage.setItem("houseAnswers", JSON.stringify(nextAnswers));
-      sessionStorage.removeItem("houseQuestionState");
-      router.push("/house/position");
-    }
+    setTimeout(() => {
+      const nextAnswers = [...answers];
+      nextAnswers[index] = option;
+
+      if (index < questions.length - 1) {
+        setAnimating(true);
+        setDirection("forward");
+        setVisible(false);
+
+        setTimeout(() => {
+          const nextIndex = index + 1;
+          setAnswers(nextAnswers);
+          setIndex(nextIndex);
+          setSelectedOption(null);
+          persist(nextAnswers, nextIndex);
+          setVisible(true);
+          setAnimating(false);
+        }, 320);
+      } else {
+        sessionStorage.setItem("houseAnswers", JSON.stringify(nextAnswers));
+        sessionStorage.removeItem("houseQuestionState");
+        setAnimating(true);
+        setVisible(false);
+        setTimeout(() => router.push("/house/position"), 320);
+      }
+    }, 280);
   }
 
   function handleBack() {
+    if (animating) return;
     if (index === 0) {
       router.push("/house");
       return;
     }
-    const nextIndex = index - 1;
-    setIndex(nextIndex);
-    persist(answers, nextIndex);
+    setAnimating(true);
+    setDirection("back");
+    setVisible(false);
+    setTimeout(() => {
+      const nextIndex = index - 1;
+      setIndex(nextIndex);
+      setSelectedOption(null);
+      persist(answers, nextIndex);
+      setVisible(true);
+      setAnimating(false);
+    }, 320);
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-sky-50 to-white text-slate-800">
-      <div className="mx-auto max-w-2xl px-6 py-24">
-        <div className="rounded-2xl bg-white p-10 shadow-sm space-y-8">
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #eef2ff 0%, #e0f2fe 50%, #f0fdf4 100%)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 1rem",
+      }}
+    >
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
-          {/* Header row */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">
-              Question {index + 1} of {questions.length}
-            </p>
-            <button
-              onClick={handleBack}
-              className="text-sm text-slate-500 hover:text-slate-700"
-            >
-              Back
-            </button>
-          </div>
+      <div style={{ width: "100%", maxWidth: 520 }}>
 
-          {/* Progress bar */}
-          <div className="w-full bg-slate-100 rounded-full h-1.5">
-            <div
-              className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Top bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", padding: "0 0.25rem" }}>
+          <button
+            onClick={handleBack}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 13,
+              color: "#64748b",
+              cursor: "pointer",
+              padding: "6px 0",
+              fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            ← Back
+          </button>
+          <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
+            {index + 1} / {questions.length}
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{
+          height: 3,
+          background: "#e2e8f0",
+          borderRadius: 99,
+          marginBottom: "2rem",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            height: "100%",
+            width: `${progress}%`,
+            background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
+            borderRadius: 99,
+            transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          }} />
+        </div>
+
+        {/* Card */}
+        <div
+          ref={containerRef}
+          style={{
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            borderRadius: 24,
+            padding: "2.5rem",
+            boxShadow: "0 4px 40px rgba(99,102,241,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+            border: "1px solid rgba(255,255,255,0.9)",
+            opacity: visible ? 1 : 0,
+            transform: visible
+              ? "translateY(0) scale(1)"
+              : direction === "forward"
+              ? "translateY(16px) scale(0.98)"
+              : "translateY(-16px) scale(0.98)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+          }}
+        >
+          {/* Emoji */}
+          <div style={{
+            width: 52,
+            height: 52,
+            borderRadius: 16,
+            background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 24,
+            marginBottom: "1.5rem",
+          }}>
+            {q.emoji}
           </div>
 
           {/* Question */}
-          <h1 className="text-2xl font-semibold leading-snug">
+          <h1 style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontSize: "clamp(1.25rem, 4vw, 1.6rem)",
+            fontWeight: 400,
+            color: "#1e293b",
+            lineHeight: 1.3,
+            marginBottom: "2rem",
+            letterSpacing: "-0.01em",
+          }}>
             {q.text}
           </h1>
 
           {/* Options */}
-          <div className="space-y-3">
-            {q.options.map((o) => {
-              const isSelected = selected === o;
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {q.options.map((option, i) => {
+              const isSelected = selectedOption === option;
+              const isPrevSelected = answers[index] === option && selectedOption === null;
+
               return (
                 <button
-                  key={o}
-                  type="button"
-                  onClick={() => advance(o)}
-                  className={`w-full text-left rounded-xl border p-4 text-sm transition-colors
-                    ${isSelected
-                      ? "border-indigo-600 bg-indigo-50 text-indigo-800"
-                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                    }`}
+                  key={option}
+                  onClick={() => advance(option)}
+                  disabled={animating}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "14px 18px",
+                    borderRadius: 14,
+                    border: isSelected
+                      ? "2px solid #6366f1"
+                      : isPrevSelected
+                      ? "2px solid #c7d2fe"
+                      : "2px solid #f1f5f9",
+                    background: isSelected
+                      ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                      : isPrevSelected
+                      ? "#eef2ff"
+                      : "#f8fafc",
+                    color: isSelected ? "#ffffff" : isPrevSelected ? "#4338ca" : "#334155",
+                    fontSize: 15,
+                    fontWeight: isSelected ? 500 : 400,
+                    cursor: animating ? "default" : "pointer",
+                    fontFamily: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    transform: isSelected ? "scale(0.99)" : "scale(1)",
+                    transition: "all 0.15s ease",
+                    animationDelay: `${i * 60}ms`,
+                    boxShadow: isSelected
+                      ? "0 4px 16px rgba(99,102,241,0.3)"
+                      : "none",
+                  }}
                 >
-                  {o}
+                  <span>{option}</span>
+                  {isSelected && (
+                    <span style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}>
+                      ✓
+                    </span>
+                  )}
+                  {isPrevSelected && !isSelected && (
+                    <span style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "#c7d2fe",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      color: "#4338ca",
+                      flexShrink: 0,
+                    }}>
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {/* Footer */}
-          <p className="text-xs text-slate-400 text-center">
-            No sign-up. No advice. No pressure.
-          </p>
-
         </div>
+
+        {/* Footer */}
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>
+          No sign-up. No advice. No pressure.
+        </p>
+
       </div>
     </main>
   );
