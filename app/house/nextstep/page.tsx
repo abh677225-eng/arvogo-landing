@@ -46,15 +46,6 @@ const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
 
 type CategoryKey = "broker" | "buyers-agent" | "conveyancer" | "building-pest";
 
-type Provider = {
-  name: string;
-  initials: string;
-  title: string;
-  blurb: string;
-  tag: string;
-  category: CategoryKey;
-};
-
 const CATEGORY_INFO: Record<CategoryKey, {
   emoji: string;
   title: string;
@@ -112,72 +103,6 @@ const CATEGORY_INFO: Record<CategoryKey, {
   },
 };
 
-const PROVIDERS: Record<CategoryKey, Provider[]> = {
-  broker: [
-    {
-      name: "Sarah Mitchell",
-      initials: "SM",
-      title: "Mortgage Broker · Melbourne",
-      blurb: "Sarah works with first home buyers who aren't sure where to start. She's known for making the whole process feel less overwhelming — no jargon, no rush, just clear guidance.",
-      tag: "🏠 First home buyers",
-      category: "broker",
-    },
-    {
-      name: "James Okafor",
-      initials: "JO",
-      title: "Mortgage Broker · Melbourne & surrounds",
-      blurb: "James specialises in helping buyers understand their real borrowing position early — before they start looking at homes. Direct, thorough, and easy to talk to.",
-      tag: "💡 Borrowing clarity",
-      category: "broker",
-    },
-  ],
-  "buyers-agent": [
-    {
-      name: "Claire Andersen",
-      initials: "CA",
-      title: "Buyers Agent · Melbourne",
-      blurb: "Claire searches, evaluates and bids on properties on your behalf — so you're not doing it alone. Particularly useful if you're time-poor or unfamiliar with the area.",
-      tag: "🔍 Property search",
-      category: "buyers-agent",
-    },
-    {
-      name: "David Nguyen",
-      initials: "DN",
-      title: "Buyers Agent · Melbourne & surrounds",
-      blurb: "David specialises in helping buyers avoid overpaying at auction. He brings local market knowledge and negotiation experience that most first-time buyers don't have.",
-      tag: "🏆 Auction specialist",
-      category: "buyers-agent",
-    },
-  ],
-  conveyancer: [
-    {
-      name: "Mia Torres",
-      initials: "MT",
-      title: "Conveyancer · Victoria",
-      blurb: "Mia handles the legal transfer of the property — reviewing contracts, managing settlement, and making sure everything is in order before you sign anything binding.",
-      tag: "📋 Contracts & settlement",
-      category: "conveyancer",
-    },
-  ],
-  "building-pest": [
-    {
-      name: "Rob Callahan",
-      initials: "RC",
-      title: "Building & Pest Inspector · Melbourne",
-      blurb: "Rob provides thorough pre-purchase inspections covering structural integrity, defects, and pest activity. Clear written reports with photos, usually within 24 hours.",
-      tag: "🏗️ Pre-purchase inspections",
-      category: "building-pest",
-    },
-    {
-      name: "Yuki Tanaka",
-      initials: "YT",
-      title: "Building & Pest Inspector · Victoria-wide",
-      blurb: "Yuki is known for finding issues other inspectors miss. Particularly experienced with older Melbourne homes and properties with complex structures.",
-      tag: "🔎 Detailed inspections",
-      category: "building-pest",
-    },
-  ],
-};
 
 const PROPERTY_RESOURCES = [
   {
@@ -230,58 +155,6 @@ function CostBadge({ cost, costType }: { cost: string; costType: "free" | "paid"
   );
 }
 
-function ProviderCard({ provider, onConnect }: { provider: Provider; onConnect: (p: Provider) => void }) {
-  const info = CATEGORY_INFO[provider.category];
-  return (
-    <div style={{
-      background: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)",
-      borderRadius: 16, border: "1px solid rgba(255,255,255,0.9)",
-      padding: "1rem 1.1rem",
-      boxShadow: "0 2px 12px rgba(99,102,241,0.04)",
-    }}>
-      <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-        <div style={{
-          width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
-          background: info.avatarGradient,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 700, color: "#fff",
-        }}>{provider.initials}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 1 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: 0 }}>{provider.name}</p>
-            <span style={{
-              fontSize: 10, padding: "2px 7px", borderRadius: 99,
-              background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe",
-            }}>{provider.tag}</span>
-          </div>
-          <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{provider.title}</p>
-        </div>
-        <span style={{
-          fontSize: 10, fontWeight: 600, padding: "3px 7px", borderRadius: 99,
-          background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
-          flexShrink: 0, alignSelf: "flex-start",
-        }}>✓ Verified</span>
-      </div>
-      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6, marginBottom: 10 }}>{provider.blurb}</p>
-      <button
-        onClick={() => onConnect(provider)}
-        style={{
-          width: "100%", padding: "9px 14px", borderRadius: 10,
-          background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-          border: "1.5px solid rgba(99,102,241,0.2)",
-          color: "#4338ca", fontSize: 12, fontWeight: 600,
-          cursor: "pointer", fontFamily: "inherit",
-          transition: "all 0.15s ease",
-        }}
-        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, #e0e7ff, #c7d2fe)"}
-        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, #eef2ff, #e0e7ff)"}
-      >
-        Connect with {provider.name.split(" ")[0]} 👋
-      </button>
-    </div>
-  );
-}
-
 function CategorySection({
   categoryKey,
   position,
@@ -289,11 +162,21 @@ function CategorySection({
 }: {
   categoryKey: CategoryKey;
   position: PositionKey;
-  onConnect: (p: Provider) => void;
+  onConnect: (category: CategoryKey, form: LeadForm) => void;
 }) {
   const info = CATEGORY_INFO[categoryKey];
-  const providers = PROVIDERS[categoryKey];
   const [expanded, setExpanded] = useState(false);
+  const [form, setForm] = useState<LeadForm>({ name: "", email: "", phone: "", message: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    if (!form.name.trim() || !form.email.trim()) return;
+    setSubmitting(true);
+    await onConnect(categoryKey, form);
+    setSubmitted(true);
+    setSubmitting(false);
+  }
 
   return (
     <div style={{
@@ -353,29 +236,102 @@ function CategorySection({
         </p>
       </div>
 
-      {/* Toggle */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        style={{
-          width: "100%", padding: "9px 14px", borderRadius: 10,
-          background: expanded ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
-          border: expanded ? "none" : "1.5px solid #e2e8f0",
-          color: expanded ? "#fff" : "#6366f1",
-          fontSize: 12, fontWeight: 600,
-          cursor: "pointer", fontFamily: "inherit",
-          boxShadow: expanded ? "0 4px 12px rgba(99,102,241,0.25)" : "none",
-          transition: "all 0.2s ease",
-        }}
-      >
-        {expanded ? `Hide ${info.title}s ↑` : `See available ${info.title}s ↓`}
-      </button>
+      {/* Request form toggle */}
+      {!submitted ? (
+        <>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              width: "100%", padding: "9px 14px", borderRadius: 10,
+              background: expanded ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+              border: expanded ? "none" : "1.5px solid #e2e8f0",
+              color: expanded ? "#fff" : "#6366f1",
+              fontSize: 12, fontWeight: 600,
+              cursor: "pointer", fontFamily: "inherit",
+              boxShadow: expanded ? "0 4px 12px rgba(99,102,241,0.25)" : "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {expanded ? `Hide request form ↑` : `Connect with a ${info.title.toLowerCase()} ↓`}
+          </button>
 
-      {/* Providers */}
-      {expanded && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: "0.75rem" }}>
-          {providers.map(p => (
-            <ProviderCard key={p.name} provider={p} onConnect={onConnect} />
-          ))}
+          {expanded && (
+            <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: 10 }}>
+              <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
+                Leave your details and we'll connect you with a suitable {info.title.toLowerCase()} in Melbourne. No obligation.
+              </p>
+              {[
+                { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
+                { key: "email", label: "Email address", placeholder: "you@email.com", type: "email" },
+                { key: "phone", label: "Phone (optional)", placeholder: "04xx xxx xxx", type: "tel" },
+              ].map(field => (
+                <div key={field.key}>
+                  <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{field.label}</label>
+                  <input
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    value={form[field.key as keyof LeadForm]}
+                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 10,
+                      border: "1.5px solid #e2e8f0", fontSize: 13,
+                      fontFamily: "inherit", background: "#f8fafc",
+                      outline: "none", boxSizing: "border-box" as const,
+                    }}
+                    onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                    onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                  />
+                </div>
+              ))}
+              <div>
+                <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>
+                  Anything useful to know? (optional)
+                </label>
+                <textarea
+                  placeholder={`e.g. First home buyer, budget around $700k, looking in Melbourne's north...`}
+                  value={form.message}
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  rows={3}
+                  style={{
+                    width: "100%", padding: "10px 12px", borderRadius: 10,
+                    border: "1.5px solid #e2e8f0", fontSize: 13,
+                    fontFamily: "inherit", background: "#f8fafc",
+                    outline: "none", resize: "none" as const, boxSizing: "border-box" as const,
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                />
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={!form.name.trim() || !form.email.trim() || submitting}
+                style={{
+                  width: "100%", padding: "11px", borderRadius: 10,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                  opacity: !form.name.trim() || !form.email.trim() ? 0.5 : 1,
+                  transition: "opacity 0.15s ease",
+                }}
+              >
+                {submitting ? "Sending... ⏳" : `Request a ${info.title.toLowerCase()} introduction ✦`}
+              </button>
+              <p style={{ fontSize: 11, color: "#94a3b8", textAlign: "center", margin: 0 }}>
+                We'll be in touch within 1 business day.
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{
+          background: "#f0fdf4", borderRadius: 12, padding: "1rem",
+          border: "1px solid #bbf7d0", textAlign: "center",
+        }}>
+          <p style={{ fontSize: 22, margin: "0 0 6px" }}>✅</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#16a34a", margin: "0 0 4px" }}>Request received</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>
+            We'll connect you with a suitable {info.title.toLowerCase()} within 1 business day.
+          </p>
         </div>
       )}
     </div>
@@ -443,165 +399,11 @@ function PropertyResources({ position }: { position: PositionKey }) {
   );
 }
 
-function LeadModal({
-  provider,
-  onClose,
-  submitState,
-  onSubmit,
-  form,
-  setForm,
-}: {
-  provider: Provider;
-  onClose: () => void;
-  submitState: SubmitState;
-  onSubmit: () => void;
-  form: LeadForm;
-  setForm: (f: LeadForm) => void;
-}) {
-  const info = CATEGORY_INFO[provider.category];
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 50,
-        background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: "100%", maxWidth: 420,
-          background: "rgba(255,255,255,0.98)",
-          borderRadius: 24, padding: "2rem",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
-          border: "1px solid rgba(255,255,255,0.9)",
-        }}
-      >
-        {submitState === "done" ? (
-          <div style={{ textAlign: "center", padding: "1rem 0" }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: "50%", margin: "0 auto 1rem",
-              background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
-            }}>✅</div>
-            <h2 style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "1.5rem", fontWeight: 400, color: "#1e293b", marginBottom: 8,
-            }}>Request sent!</h2>
-            <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, marginBottom: "1.5rem" }}>
-              {provider.name.split(" ")[0]} will be in touch shortly. No obligation — just a conversation.
-            </p>
-            <button onClick={onClose} style={{
-              padding: "10px 24px", borderRadius: 12,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit",
-            }}>Done ✦</button>
-          </div>
-        ) : (
-          <>
-            {/* Provider info in modal */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.25rem", padding: "10px 12px", background: "#f8fafc", borderRadius: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                background: info.avatarGradient,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "#fff",
-              }}>{provider.initials}</div>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{provider.name}</p>
-                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{provider.title}</p>
-              </div>
-            </div>
-
-            <h2 style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "1.35rem", fontWeight: 400, color: "#1e293b", marginBottom: 4,
-            }}>Request an introduction</h2>
-            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: "1.25rem" }}>
-              No obligation. Just a relaxed introductory chat.
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1rem" }}>
-              {[
-                { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
-                { key: "email", label: "Email address", placeholder: "you@email.com", type: "email" },
-                { key: "phone", label: "Phone (optional)", placeholder: "04xx xxx xxx", type: "tel" },
-              ].map(field => (
-                <div key={field.key}>
-                  <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{field.label}</label>
-                  <input
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    value={form[field.key as keyof LeadForm]}
-                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-                    style={{
-                      width: "100%", padding: "10px 12px", borderRadius: 10,
-                      border: "1.5px solid #e2e8f0", fontSize: 14,
-                      fontFamily: "inherit", background: "#f8fafc",
-                      outline: "none", boxSizing: "border-box",
-                    }}
-                    onFocus={e => e.target.style.borderColor = "#a5b4fc"}
-                    onBlur={e => e.target.style.borderColor = "#e2e8f0"}
-                  />
-                </div>
-              ))}
-              <div>
-                <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Anything to share? (optional)</label>
-                <textarea
-                  placeholder="e.g. First home buyer, budget around $700k..."
-                  value={form.message}
-                  onChange={e => setForm({ ...form, message: e.target.value })}
-                  rows={3}
-                  style={{
-                    width: "100%", padding: "10px 12px", borderRadius: 10,
-                    border: "1.5px solid #e2e8f0", fontSize: 14,
-                    fontFamily: "inherit", background: "#f8fafc",
-                    outline: "none", resize: "none", boxSizing: "border-box",
-                  }}
-                  onFocus={e => e.target.style.borderColor = "#a5b4fc"}
-                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={onSubmit}
-              disabled={!form.name.trim() || !form.email.trim() || submitState === "submitting"}
-              style={{
-                width: "100%", padding: "13px", borderRadius: 12,
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit", marginBottom: 8,
-                opacity: !form.name.trim() || !form.email.trim() ? 0.5 : 1,
-                transition: "opacity 0.15s ease",
-              }}
-            >
-              {submitState === "submitting" ? "Sending... ⏳" : "Send introduction request ✦"}
-            </button>
-            <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", margin: 0 }}>
-              Your details are only shared with {provider.name.split(" ")[0]}.
-            </p>
-            <button onClick={onClose} style={{
-              display: "block", width: "100%", marginTop: 8,
-              background: "none", border: "none", fontSize: 12,
-              color: "#94a3b8", cursor: "pointer", fontFamily: "inherit",
-            }}>Cancel</button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function HouseNextStep() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("exploring");
   const [visible, setVisible] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
-  const [form, setForm] = useState<LeadForm>({ name: "", email: "", phone: "", message: "" });
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done">("idle");
 
   useEffect(() => {
     const raw = sessionStorage.getItem("houseAnswers");
@@ -612,26 +414,12 @@ export default function HouseNextStep() {
 
   const intro = INTROS[position];
 
-  async function handleSubmit() {
-    if (!form.name.trim() || !form.email.trim()) return;
-    setSubmitState("submitting");
+  async function handleConnect(category: CategoryKey, form: LeadForm) {
     await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        provider: selectedProvider?.name,
-        category: selectedProvider?.category,
-        position,
-      }),
+      body: JSON.stringify({ ...form, category, position }),
     });
-    setSubmitState("done");
-  }
-
-  function handleConnect(provider: Provider) {
-    setSelectedProvider(provider);
-    setSubmitState("idle");
-    setForm({ name: "", email: "", phone: "", message: "" });
   }
 
   const showBrokers = true;
@@ -712,17 +500,7 @@ export default function HouseNextStep() {
 
       </div>
 
-      {/* Lead modal */}
-      {selectedProvider && (
-        <LeadModal
-          provider={selectedProvider}
-          onClose={() => setSelectedProvider(null)}
-          submitState={submitState}
-          onSubmit={handleSubmit}
-          form={form}
-          setForm={setForm}
-        />
-      )}
+
     </main>
   );
 }
