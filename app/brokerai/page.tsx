@@ -84,10 +84,11 @@ export default function BrokerAI() {
       let fullText: string = data.choices[0].message.content;
       let parsedMetrics: Metrics = { time_saved_hours: 2.5, flags_count: 3, action_items: 2 };
 
-      const jsonMatch = fullText.match(/\{[\s\S]*"time_saved_hours"[\s\S]*\}/);
+      const cleaned = fullText.replace(/```json|```/g, "").trim();
+	  const jsonMatch = cleaned.match(/\{[\s\S]*"time_saved_hours"[\s\S]*\}/);
       if (jsonMatch) {
         try { parsedMetrics = JSON.parse(jsonMatch[0]); } catch (e) {}
-        fullText = fullText.replace(jsonMatch[0], "").trim();
+        fullText = cleaned.replace(jsonMatch[0], "").trim();
       }
 
       setMetrics(parsedMetrics);
