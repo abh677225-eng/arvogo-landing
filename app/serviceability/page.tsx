@@ -65,31 +65,27 @@ function calculateResults(form: typeof defaultForm): Results {
 
   // Liabilities — bank methodology
   const carLoan = parseFloat(form.carLoan) || 0;
-  // Banks assess 3.8% p.a. of total credit card LIMIT as monthly repayment obligation
   const creditCardLimit = parseFloat(form.creditCards) || 0;
+  // Banks assess 3.8% p.a. of total credit card LIMIT as monthly commitment
   const creditCardMonthly = (creditCardLimit * 0.038) / 12;
+  // Other loan repayments (personal loans, HECS etc — NOT rent)
   const otherLiabilities = parseFloat(form.otherLiabilities) || 0;
-
-  // HEM — use higher of declared or benchmark (banks always use higher)
+  // Current rent — excluded from serviceability (stops when you buy)
+  // HEM covers living expenses — banks use benchmark, rent is transitional
   const hem = calcHEM(grossIncome, hasPartner, dependants);
-  const totalMonthlyCommitments = carLoan + creditCardMonthly + otherLiabilities + hem;
+  // Only debt repayments count — not rent
+  const debtRepayments = carLoan + creditCardMonthly + otherLiabilities;
+  const totalMonthlyCommitments = debtRepayments + hem;
 
-  // APRA mandated: assess at contract rate + 3% buffer (current SVR ~6.25% → assess at 9.25%)
+  // APRA mandated assessment rate: actual rate + 3% buffer
   const contractRate = 0.0625;
-  const assessmentRate = contractRate + 0.03; // 9.25% — APRA buffer
+  const assessmentRate = contractRate + 0.03; // 9.25%
   const months = 30 * 12;
   const monthlyAssessRate = assessmentRate / 12;
 
-  // Banks cap DSR at ~30-35% of GROSS income
-  const maxDSRMonthly = (grossIncome * 0.32) / 12;
-  // Available for new loan = DSR cap minus existing commitments (excl HEM)
-  const existingCommitments = carLoan + creditCardMonthly + otherLiabilities;
-  const availableForLoan = Math.max(0, maxDSRMonthly - existingCommitments);
-  // Also check net surplus method
+  // Surplus method: net income minus all commitments = available for loan repayment
   const surplusIncome = netMonthlyIncome - totalMonthlyCommitments;
-  const surplusAvailable = Math.max(0, surplusIncome * 0.85);
-  // Use the lower of DSR method and surplus method (conservative, like banks)
-  const maxMonthlyRepayment = Math.min(availableForLoan, surplusAvailable);
+  const maxMonthlyRepayment = Math.max(0, surplusIncome);
 
   // Reverse amortisation at assessment rate to get borrowing capacity
   const borrowingCapacity = maxMonthlyRepayment > 0
@@ -291,7 +287,7 @@ export default function ServiceabilityCalculator() {
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-slate-500">Other monthly commitments</label>
+            <label className="text-xs text-slate-500">Other loan repayments/month (not rent)</label>
             <input type="number" placeholder="e.g. 300" value={form.otherLiabilities}
               onChange={e => set("otherLiabilities", e.target.value)}
               className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-slate-400" />
