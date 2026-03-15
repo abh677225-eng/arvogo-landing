@@ -11,15 +11,15 @@ const meshBg = `
 `;
 
 const steps = [
-  { number: 1, emoji: "💬", label: "4 quick questions" },
-  { number: 2, emoji: "📍", label: "See your position" },
-  { number: 3, emoji: "🗺️", label: "Get your path" },
+  { emoji: "💬", label: "4 quick questions" },
+  { emoji: "📍", label: "See your position" },
+  { emoji: "🗺️", label: "Get your path" },
 ];
 
 const benefits = [
   { emoji: "🎯", title: "Where you actually are", desc: "Not where you think you should be" },
   { emoji: "⚡", title: "What to focus on next", desc: "One thing, not a 20-step checklist" },
-  { emoji: "😮‍💨", title: "What to ignore for now", desc: "So you stop worrying about the wrong things" },
+  { emoji: "🧘", title: "What to set aside for now", desc: "So your energy goes where it actually matters" },
 ];
 
 export default function HouseEntry() {
@@ -79,11 +79,9 @@ export default function HouseEntry() {
             How it works
           </p>
           <div style={{ display: "flex", alignItems: "flex-start", position: "relative" }}>
-            {/* Connector */}
             <div style={{
               position: "absolute", top: 16, left: 16, right: 16,
-              height: 2, background: "linear-gradient(90deg, #c7d2fe, #a5b4fc, #c7d2fe)",
-              zIndex: 0,
+              height: 2, background: "linear-gradient(90deg, #c7d2fe, #a5b4fc, #c7d2fe)", zIndex: 0,
             }} />
             {steps.map((step, i) => (
               <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 1 }}>
@@ -122,8 +120,7 @@ export default function HouseEntry() {
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                   background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 18,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
                 }}>
                   {b.emoji}
                 </div>
@@ -149,8 +146,8 @@ export default function HouseEntry() {
             border: "none", color: "#fff", fontSize: 16, fontWeight: 600,
             cursor: "pointer", fontFamily: "inherit",
             boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
-            transition: "opacity 0.15s ease, transform 0.15s ease",
             marginBottom: "0.75rem",
+            transition: "opacity 0.15s ease, transform 0.15s ease",
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLButtonElement).style.opacity = "0.92";
@@ -161,7 +158,7 @@ export default function HouseEntry() {
             (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
           }}
         >
-          Help me get oriented ✦
+          Help me get oriented
         </button>
         <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
           No sign-up. No advice. No pressure. Takes 2 minutes.

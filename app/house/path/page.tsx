@@ -22,7 +22,7 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   const execution = answers[3];
   if (execution === "I'm already making offers") return "in-process";
   if (execution === "I'm actively looking") {
-    if (stability === "Uncertain" || stability === "Hard to say") return "considering";
+    if (stability === "Uncertain" || stability === "It's complicated") return "considering";
     return "preparing";
   }
   if (execution === "I've been browsing a bit") return "considering";
@@ -33,41 +33,41 @@ const STEPS = [
   {
     number: 1,
     emoji: "🪞",
-    title: "Is buying even the right move?",
-    summary: "The real question isn't which home — it's whether ownership fits your life right now.",
-    detail: "Reflect on what's prompting the idea. What would ownership actually change? What wouldn't it? This is orientation, not research.",
+    title: "Get clear on what you actually want",
+    summary: "The real question isn't which home to buy — it's whether ownership genuinely fits your life right now.",
+    detail: "Reflect on what's prompting this idea. What would owning a home actually change for you? What wouldn't it change? This is about orientation, not research — and it's the most important step.",
     isLater: false,
   },
   {
     number: 2,
     emoji: "🧭",
-    title: "Understand your constraints",
-    summary: "Get a loose sense of what feels comfortable, risky, or unrealistic — before any numbers.",
-    detail: "Most people do this informally. The goal is to avoid drifting into situations that would clearly feel stressful later.",
+    title: "Get a rough sense of your boundaries",
+    summary: "Before any numbers, get a loose feel for what seems comfortable, risky, or clearly off the table.",
+    detail: "Most people do this informally. The goal is simply to avoid drifting into situations that would feel stressful or misaligned later — not to get precise answers yet.",
     isLater: false,
   },
   {
     number: 3,
     emoji: "⚖️",
-    title: "Know your trade-offs",
-    summary: "Every home involves compromises. Know which ones you can live with.",
-    detail: "Think through day-to-day life — space, location, commute, flexibility. Not about listings yet. It's about knowing yourself.",
+    title: "Know which trade-offs you can live with",
+    summary: "Every home involves compromises. Knowing which ones matter to you keeps you grounded when things get real.",
+    detail: "Think through day-to-day life — space, location, commute, flexibility. This isn't about browsing listings. It's about knowing yourself well enough to make good decisions later.",
     isLater: false,
   },
   {
     number: 4,
     emoji: "💰",
-    title: "Check what's actually possible",
-    summary: "Confirm your borrowing capacity and what lenders will look at.",
-    detail: "Talk to a broker or use a calculator here — to validate assumptions, not to commit. This is where numbers get real.",
+    title: "Check what's financially possible",
+    summary: "Once the earlier steps feel grounded, it makes sense to confirm what's actually feasible.",
+    detail: "This is a good time to talk to a broker or use a serviceability calculator — not to commit to anything, but to validate your assumptions with real numbers. Knowing your borrowing capacity changes how you think about the next step.",
     isLater: true,
   },
   {
     number: 5,
     emoji: "🏡",
     title: "Inspections and offers",
-    summary: "Decisions get concrete and harder to reverse. Move steadily.",
-    detail: "Most people reach this point after looping back through earlier steps a few times, feeling informed rather than rushed.",
+    summary: "Decisions become concrete and harder to reverse. The goal is to move steadily, not quickly.",
+    detail: "Most people who feel calm at this stage have looped back through the earlier steps a few times. Being informed going in makes a big difference to how this phase feels.",
     isLater: true,
   },
 ];
@@ -77,7 +77,6 @@ function StepCard({ step, isActive, isPast }: { step: typeof STEPS[0]; isActive:
 
   return (
     <div style={{ display: "flex", gap: 14, marginBottom: 10 }}>
-      {/* Left: number + line */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
         <div style={{
           width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
@@ -88,8 +87,7 @@ function StepCard({ step, isActive, isPast }: { step: typeof STEPS[0]; isActive:
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: isPast ? 14 : 18,
           boxShadow: isActive ? "0 4px 12px rgba(99,102,241,0.35)" : "none",
-          transition: "all 0.3s ease",
-          zIndex: 1,
+          transition: "all 0.3s ease", zIndex: 1,
         }}>
           {isPast ? "✓" : step.emoji}
         </div>
@@ -100,27 +98,17 @@ function StepCard({ step, isActive, isPast }: { step: typeof STEPS[0]; isActive:
         }} />
       </div>
 
-      {/* Right: card */}
       <div style={{
         flex: 1, borderRadius: 18,
-        background: isActive
-          ? "rgba(238,242,255,0.95)"
-          : "rgba(255,255,255,0.75)",
+        background: isActive ? "rgba(238,242,255,0.95)" : "rgba(255,255,255,0.75)",
         backdropFilter: "blur(8px)",
-        border: isActive
-          ? "1.5px solid rgba(99,102,241,0.25)"
-          : step.isLater ? "1px solid rgba(241,245,249,0.8)" : "1px solid rgba(255,255,255,0.9)",
-        padding: "1rem 1.25rem",
-        marginBottom: 6,
+        border: isActive ? "1.5px solid rgba(99,102,241,0.25)" : step.isLater ? "1px solid rgba(241,245,249,0.8)" : "1px solid rgba(255,255,255,0.9)",
+        padding: "1rem 1.25rem", marginBottom: 6,
         boxShadow: isActive ? "0 4px 20px rgba(99,102,241,0.1)" : "none",
         opacity: step.isLater && !isActive ? 0.7 : 1,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-          <p style={{
-            fontSize: 14, fontWeight: 600,
-            color: isActive ? "#4338ca" : "#1e293b",
-            margin: 0,
-          }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: isActive ? "#4338ca" : "#1e293b", margin: 0 }}>
             {step.title}
           </p>
           {isActive && (
@@ -128,18 +116,14 @@ function StepCard({ step, isActive, isPast }: { step: typeof STEPS[0]; isActive:
               fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 99,
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
               color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em",
-            }}>
-              You are here
-            </span>
+            }}>You are here</span>
           )}
           {step.isLater && !isActive && (
             <span style={{
               fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 99,
               background: "#f1f5f9", color: "#94a3b8",
               textTransform: "uppercase", letterSpacing: "0.05em",
-            }}>
-              Later
-            </span>
+            }}>Later</span>
           )}
         </div>
         <p style={{ fontSize: 13, color: isActive ? "#4338ca" : "#64748b", lineHeight: 1.6, margin: "0 0 8px" }}>
@@ -154,7 +138,7 @@ function StepCard({ step, isActive, isPast }: { step: typeof STEPS[0]; isActive:
             textDecoration: "underline", textUnderlineOffset: 3,
           }}
         >
-          {open ? "Hide ↑" : "How people approach this ↓"}
+          {open ? "Show less ↑" : "How people approach this ↓"}
         </button>
         {open && (
           <div style={{
@@ -186,8 +170,7 @@ export default function HousePath() {
   return (
     <main style={{
       minHeight: "100vh", background: meshBg,
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      padding: "0 1rem",
+      fontFamily: "'DM Sans', system-ui, sans-serif", padding: "0 1rem",
     }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
@@ -199,16 +182,12 @@ export default function HousePath() {
         transition: "opacity 0.5s ease, transform 0.5s ease",
       }}>
 
-        {/* Back */}
         <button onClick={() => router.push("/house/position")} style={{
           background: "none", border: "none", fontSize: 13, color: "#64748b",
           cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem",
           display: "flex", alignItems: "center", gap: 6, padding: 0,
-        }}>
-          ← Back
-        </button>
+        }}>← Back</button>
 
-        {/* Header */}
         <div style={{
           background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
           borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
@@ -228,7 +207,6 @@ export default function HousePath() {
           </p>
         </div>
 
-        {/* Steps */}
         <div>
           {STEPS.map(step => (
             <StepCard
@@ -240,7 +218,6 @@ export default function HousePath() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
         <div style={{
           background: "linear-gradient(135deg, rgba(238,242,255,0.95), rgba(224,231,255,0.95))",
           backdropFilter: "blur(12px)",
@@ -249,7 +226,7 @@ export default function HousePath() {
           boxShadow: "0 4px 24px rgba(99,102,241,0.08)",
         }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: "#4338ca", marginBottom: 4 }}>
-            Ready to check what's financially possible? 💰
+            Ready to check what's financially possible?
           </p>
           <p style={{ fontSize: 13, color: "#6366f1", marginBottom: "1rem" }}>
             Get a rough sense of your borrowing capacity before talking to anyone.
@@ -258,21 +235,15 @@ export default function HousePath() {
             <a href="/serviceability" style={{
               padding: "10px 18px", borderRadius: 12,
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              color: "#fff", fontSize: 13, fontWeight: 600,
-              textDecoration: "none",
+              color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none",
               boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-            }}>
-              Try the calculator 🧮
-            </a>
+            }}>Try the calculator 🧮</a>
             <a href="/house/nextstep" style={{
               padding: "10px 18px", borderRadius: 12,
               background: "rgba(255,255,255,0.8)",
               border: "1.5px solid rgba(99,102,241,0.2)",
-              color: "#6366f1", fontSize: 13, fontWeight: 500,
-              textDecoration: "none",
-            }}>
-              Talk to a broker 🤝
-            </a>
+              color: "#6366f1", fontSize: 13, fontWeight: 500, textDecoration: "none",
+            }}>Talk to a broker 🤝</a>
           </div>
         </div>
 

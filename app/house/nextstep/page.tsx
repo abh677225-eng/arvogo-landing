@@ -18,7 +18,7 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   const execution = answers[3];
   if (execution === "I'm already making offers") return "in-process";
   if (execution === "I'm actively looking") {
-    if (stability === "Uncertain" || stability === "Hard to say") return "considering";
+    if (stability === "Uncertain" || stability === "It's complicated") return "considering";
     return "preparing";
   }
   if (execution === "I've been browsing a bit") return "considering";
@@ -28,19 +28,19 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
 const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
   exploring: {
     heading: "Not ready for a broker yet — and that's fine 👋",
-    subtext: "A good broker won't pressure you. They'll help you understand your position so the decision feels less abstract.",
+    subtext: "A good broker won't push you. They'll help you understand what's actually possible so the whole decision feels less abstract — with no obligation to go any further.",
   },
   considering: {
     heading: "A conversation, not a commitment 💬",
-    subtext: "You're not applying for anything. You're just getting a clearer picture of what's realistic before deciding whether to go further.",
+    subtext: "You're not applying for anything. A quick chat with a broker can give you a clearer picture of what's realistic — so you can decide whether to take this further with real information.",
   },
   preparing: {
     heading: "This is a good time to talk to a broker 🎯",
-    subtext: "Before narrowing in on a home, know your borrowing capacity. A broker can give you that clarity without locking you into anything.",
+    subtext: "Before narrowing in on a specific home, it really helps to know your borrowing position. A broker can give you that clarity without locking you into anything.",
   },
   "in-process": {
     heading: "You probably need a broker now ⚡",
-    subtext: "If you're making offers or close to it, having a broker in your corner makes a real difference on speed, lender choice, and avoiding mistakes.",
+    subtext: "If you're making offers or close to it, having a broker in your corner makes a real difference — on speed, on lender choice, and on avoiding costly mistakes.",
   },
 };
 
@@ -49,28 +49,22 @@ const PROVIDERS = [
     name: "Sarah Mitchell",
     initials: "SM",
     title: "Mortgage Broker · Melbourne",
-    blurb: "Works with first home buyers and people navigating complex income situations. No jargon, no rush.",
+    blurb: "Sarah works with first home buyers who aren't sure where to start. She's known for making the whole process feel less overwhelming — no jargon, no rush, just clear guidance.",
     tag: "🏠 First home buyers",
-    rating: "4.9",
-    reviews: 47,
   },
   {
     name: "James Okafor",
     initials: "JO",
     title: "Mortgage Broker · Melbourne & surrounds",
-    blurb: "Specialises in helping buyers understand their real borrowing position before they start looking at homes.",
+    blurb: "James specialises in helping buyers understand their real borrowing position early — before they start looking at homes. He's direct, thorough, and easy to talk to.",
     tag: "💡 Borrowing clarity",
-    rating: "4.8",
-    reviews: 63,
   },
   {
     name: "Priya Nair",
     initials: "PN",
     title: "Mortgage Broker · Victoria-wide",
-    blurb: "Focuses on making the lending process feel manageable — especially for buyers who find financial decisions stressful.",
-    tag: "😌 Stress-free process",
-    rating: "5.0",
-    reviews: 31,
+    blurb: "Priya focuses on buyers who find the financial side of things stressful. She takes the time to explain everything clearly and won't push you toward anything that doesn't fit.",
+    tag: "😌 Low-pressure approach",
   },
 ];
 
@@ -108,8 +102,7 @@ export default function HouseNextStep() {
   return (
     <main style={{
       minHeight: "100vh", background: meshBg,
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      padding: "0 1rem",
+      fontFamily: "'DM Sans', system-ui, sans-serif", padding: "0 1rem",
     }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
@@ -121,14 +114,11 @@ export default function HouseNextStep() {
         transition: "opacity 0.5s ease, transform 0.5s ease",
       }}>
 
-        {/* Back */}
         <button onClick={() => router.push("/house/position")} style={{
           background: "none", border: "none", fontSize: 13, color: "#64748b",
           cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem",
           display: "flex", alignItems: "center", gap: 6, padding: 0,
-        }}>
-          ← Back
-        </button>
+        }}>← Back</button>
 
         {/* Intro */}
         <div style={{
@@ -145,9 +135,7 @@ export default function HouseNextStep() {
             fontSize: "clamp(1.4rem, 4vw, 1.75rem)",
             fontWeight: 400, color: "#1e293b", lineHeight: 1.25,
             letterSpacing: "-0.02em", marginBottom: 8,
-          }}>
-            {intro.heading}
-          </h1>
+          }}>{intro.heading}</h1>
           <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{intro.subtext}</p>
         </div>
 
@@ -160,32 +148,27 @@ export default function HouseNextStep() {
               padding: "1.25rem", boxShadow: "0 4px 24px rgba(99,102,241,0.04)",
             }}>
               <div style={{ display: "flex", gap: 12, marginBottom: 10 }}>
-                {/* Avatar */}
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
                   background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 13, fontWeight: 700, color: "#fff",
-                }}>
-                  {p.initials}
-                </div>
+                }}>{p.initials}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
                     <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{p.name}</p>
                     <span style={{
                       fontSize: 11, padding: "2px 8px", borderRadius: 99,
-                      background: "#eef2ff", color: "#6366f1",
-                      border: "1px solid #c7d2fe",
-                    }}>
-                      {p.tag}
-                    </span>
+                      background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe",
+                    }}>{p.tag}</span>
                   </div>
                   <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>{p.title}</p>
                 </div>
-                {/* Rating */}
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", margin: 0 }}>★ {p.rating}</p>
-                  <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{p.reviews} reviews</p>
+                <div style={{ flexShrink: 0 }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 99,
+                    background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
+                  }}>✓ Verified</span>
                 </div>
               </div>
               <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, marginBottom: 12 }}>{p.blurb}</p>
@@ -197,7 +180,6 @@ export default function HouseNextStep() {
                   border: "1.5px solid rgba(99,102,241,0.2)",
                   color: "#4338ca", fontSize: 13, fontWeight: 600,
                   cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 0.15s ease",
                 }}
               >
                 Connect with {p.name.split(" ")[0]} 👋
@@ -210,6 +192,7 @@ export default function HouseNextStep() {
         <div style={{
           background: "rgba(255,255,255,0.7)", borderRadius: 16,
           padding: "1rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)",
+          marginBottom: "1rem",
         }}>
           <p style={{ fontSize: 13, fontWeight: 500, color: "#475569", marginBottom: 3 }}>
             Not ready to talk to anyone yet?
@@ -219,12 +202,12 @@ export default function HouseNextStep() {
             <a href="/serviceability" style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>
               Try the serviceability calculator
             </a>{" "}
-            to get a rough sense on your own terms.
+            to get a rough sense of your position on your own terms.
           </p>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", marginTop: "1.5rem" }}>
-          ✦ Providers on Arvogo follow our no-pressure introduction guidelines.
+        <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
+          ✦ Every broker on Arvogo has agreed to keep it low-pressure and honest.
         </p>
 
       </div>
@@ -235,10 +218,8 @@ export default function HouseNextStep() {
           onClick={() => setSelectedProvider(null)}
           style={{
             position: "fixed", inset: 0, zIndex: 50,
-            background: "rgba(15,23,42,0.5)",
-            backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "1rem",
+            background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
           }}
         >
           <div
@@ -256,14 +237,12 @@ export default function HouseNextStep() {
                 <div style={{
                   width: 56, height: 56, borderRadius: "50%", margin: "0 auto 1rem",
                   background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 26,
-                }}>
-                  ✅
-                </div>
-                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", fontWeight: 400, color: "#1e293b", marginBottom: 8 }}>
-                  Request sent!
-                </h2>
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
+                }}>✅</div>
+                <h2 style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontSize: "1.5rem", fontWeight: 400, color: "#1e293b", marginBottom: 8,
+                }}>Request sent!</h2>
                 <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, marginBottom: "1.5rem" }}>
                   {selectedProvider.name.split(" ")[0]} will be in touch shortly. No obligation — just a conversation.
                 </p>
@@ -272,23 +251,19 @@ export default function HouseNextStep() {
                   background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                   border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
                   cursor: "pointer", fontFamily: "inherit",
-                }}>
-                  Done ✦
-                </button>
+                }}>Done ✦</button>
               </div>
             ) : (
               <>
                 <h2 style={{
                   fontFamily: "'DM Serif Display', serif",
-                  fontSize: "1.4rem", fontWeight: 400, color: "#1e293b",
-                  marginBottom: 4,
+                  fontSize: "1.4rem", fontWeight: 400, color: "#1e293b", marginBottom: 4,
                 }}>
                   Connect with {selectedProvider.name.split(" ")[0]}
                 </h2>
                 <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: "1.5rem" }}>
                   No obligation. Just a relaxed introductory chat.
                 </p>
-
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1rem" }}>
                   {[
                     { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
@@ -327,7 +302,6 @@ export default function HouseNextStep() {
                     />
                   </div>
                 </div>
-
                 <button
                   onClick={handleSubmit}
                   disabled={!form.name.trim() || !form.email.trim() || submitState === "submitting"}
@@ -348,9 +322,7 @@ export default function HouseNextStep() {
                   display: "block", width: "100%", marginTop: 8,
                   background: "none", border: "none", fontSize: 12,
                   color: "#94a3b8", cursor: "pointer", fontFamily: "inherit",
-                }}>
-                  Cancel
-                </button>
+                }}>Cancel</button>
               </>
             )}
           </div>
