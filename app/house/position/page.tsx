@@ -3,9 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const meshBg = `
+  radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.2) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 20%, rgba(14,165,233,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 20% 80%, rgba(16,185,129,0.1) 0%, transparent 50%),
+  #eef2ff
+`;
+
 type PositionKey = "exploring" | "considering" | "preparing" | "in-process";
 
-const POSITION_COPY: Record<PositionKey, {
+const POSITIONS: Record<PositionKey, {
   emoji: string;
   title: string;
   tagline: string;
@@ -13,21 +21,19 @@ const POSITION_COPY: Record<PositionKey, {
   next: string;
   notYet: string[];
   reassurance: string;
-  color: string;
-  bg: string;
-  border: string;
+  gradient: string;
+  accent: string;
 }> = {
   exploring: {
     emoji: "🌱",
     title: "Exploring",
     tagline: "You're noticing the idea — not committing to it.",
     meaning: "Nothing to decide yet. Many people stay here a long time, and that's completely normal.",
-    next: "Get a clearer sense of what ownership would actually change in your life.",
-    notYet: ["Looking at listings", "Mortgage research", "Timing the market"],
+    next: "Get a clearer sense of what ownership would actually change in your life — and what it wouldn't.",
+    notYet: ["Researching suburbs 🏘️", "Mortgage calculations 🔢", "Timing the market 📈"],
     reassurance: "There's no rush to move past this.",
-    color: "text-teal-700",
-    bg: "bg-teal-50",
-    border: "border-teal-100",
+    gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+    accent: "#059669",
   },
   considering: {
     emoji: "🤔",
@@ -35,23 +41,21 @@ const POSITION_COPY: Record<PositionKey, {
     tagline: "Buying feels possible — but not urgent.",
     meaning: "You're not choosing a home yet. You're deciding whether to take this seriously at all.",
     next: "Untangle what's coming from you vs outside pressure or expectations.",
-    notYet: ["Viewing homes", "Talking to lenders", "Comparing suburbs"],
+    notYet: ["Viewing homes 🏠", "Talking to lenders 🏦", "Comparing suburbs 🗺️"],
     reassurance: "It's normal to sit here for a while.",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    border: "border-blue-100",
+    gradient: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
+    accent: "#2563eb",
   },
   preparing: {
     emoji: "🗺️",
     title: "Preparing",
-    tagline: "You're engaging deliberately — but haven't committed yet.",
+    tagline: "You're engaging deliberately — not committed yet.",
     meaning: "This phase is about getting your footing. Still okay to slow down or change direction.",
     next: "Make sure the rest of your life can support this decision before narrowing in on a home.",
-    notYet: ["Making offers", "Rushing timelines", "Optimising deals"],
+    notYet: ["Making offers 📝", "Rushing timelines ⏩", "Optimising deals 🔍"],
     reassurance: "Taking time here makes the later steps calmer.",
-    color: "text-indigo-700",
-    bg: "bg-indigo-50",
-    border: "border-indigo-100",
+    gradient: "linear-gradient(135deg, #ede9fe, #ddd6fe)",
+    accent: "#7c3aed",
   },
   "in-process": {
     emoji: "🏃",
@@ -59,12 +63,19 @@ const POSITION_COPY: Record<PositionKey, {
     tagline: "You're actively pursuing a home.",
     meaning: "The goal right now isn't speed — it's staying clear-headed as decisions stack up.",
     next: "Keep decisions small and sequential. Create space between commitments where you can.",
-    notYet: ["Trying to 'win'", "Comparing yourself to others", "Second-guessing every choice"],
-    reassurance: "Even now, it's okay to pause.",
-    color: "text-orange-700",
-    bg: "bg-orange-50",
-    border: "border-orange-100",
+    notYet: ["Trying to 'win' 🏆", "Comparing yourself to others 👀", "Rushing to close ⚡"],
+    reassurance: "Even now, it's okay to pause and re-orient.",
+    gradient: "linear-gradient(135deg, #ffedd5, #fed7aa)",
+    accent: "#ea580c",
   },
+};
+
+const STAGES: PositionKey[] = ["exploring", "considering", "preparing", "in-process"];
+const STAGE_LABELS: Record<PositionKey, string> = {
+  exploring: "Exploring",
+  considering: "Considering",
+  preparing: "Preparing",
+  "in-process": "Active",
 };
 
 function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
@@ -79,132 +90,219 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   return "exploring";
 }
 
-const STAGES: PositionKey[] = ["exploring", "considering", "preparing", "in-process"];
-const STAGE_LABELS: Record<PositionKey, string> = {
-  exploring: "Exploring",
-  considering: "Considering",
-  preparing: "Preparing",
-  "in-process": "In process",
-};
-
 export default function HousePosition() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("exploring");
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("houseAnswers");
     if (!raw) return;
     const answers: (string | null)[] = JSON.parse(raw);
     setPosition(mapAnswersToPosition(answers));
+    setTimeout(() => setVisible(true), 100);
   }, []);
 
-  const copy = POSITION_COPY[position];
+  const copy = POSITIONS[position];
   const currentIndex = STAGES.indexOf(position);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-sky-50 to-white text-slate-800">
-      <div className="mx-auto max-w-2xl px-6 py-24">
-        <div className="space-y-5">
+    <main style={{
+      minHeight: "100vh",
+      background: meshBg,
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      padding: "0 1rem",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
-          {/* Back */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => router.push("/house/questions")}
-              className="text-sm text-slate-500 hover:text-slate-700"
-            >
-              Back
-            </button>
-          </div>
+      <div style={{
+        maxWidth: 520, margin: "0 auto",
+        paddingTop: "4rem", paddingBottom: "4rem",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease",
+      }}>
 
-          {/* Journey progress bar */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400 mb-4">
-              Your position
-            </p>
-            <div className="flex items-start gap-0">
-              {STAGES.map((stage, i) => {
-                const isActive = stage === position;
-                const isPast = i < currentIndex;
-                return (
-                  <div key={stage} className="flex-1 flex flex-col items-center text-center relative">
-                    {i < STAGES.length - 1 && (
-                      <div className={`absolute top-3.5 left-1/2 w-full h-0.5 ${isPast || isActive ? "bg-indigo-300" : "bg-slate-200"}`} />
-                    )}
-                    <div className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium mb-2 border-2
-                      ${isActive ? "bg-indigo-600 border-indigo-600 text-white" : isPast ? "bg-indigo-100 border-indigo-300 text-indigo-500" : "bg-white border-slate-200 text-slate-400"}`}>
-                      {isPast ? "✓" : i + 1}
-                    </div>
-                    <p className={`text-xs leading-snug px-1 ${isActive ? "font-medium text-indigo-700" : "text-slate-400"}`}>
-                      {STAGE_LABELS[stage]}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {/* Back */}
+        <button onClick={() => router.push("/house/questions")} style={{
+          background: "none", border: "none", fontSize: 13, color: "#64748b",
+          cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem",
+          display: "flex", alignItems: "center", gap: 6, padding: 0,
+        }}>
+          ← Back
+        </button>
 
-          {/* Position card */}
-          <div className={`rounded-2xl p-6 shadow-sm border ${copy.bg} ${copy.border}`}>
-            <div className="flex items-center gap-3 mb-3">
-              <span style={{ fontSize: 28 }}>{copy.emoji}</span>
-              <div>
-                <p className={`text-lg font-semibold ${copy.color}`}>{copy.title}</p>
-                <p className="text-sm text-slate-600">{copy.tagline}</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 leading-relaxed">{copy.meaning}</p>
-          </div>
-
-          {/* What's next */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm space-y-2">
-            <div className="flex items-center gap-2 mb-1">
-              <span style={{ fontSize: 16 }}>➡️</span>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">What comes next</p>
-            </div>
-            <p className="text-slate-700 leading-relaxed">{copy.next}</p>
-          </div>
-
-          {/* Not yet */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <span style={{ fontSize: 16 }}>🚫</span>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Not yet</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {copy.notYet.map((item) => (
-                <span key={item} className="text-sm px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Reassurance */}
-          <div className="rounded-2xl bg-slate-50 border border-slate-100 px-6 py-4">
-            <p className="text-slate-500 italic text-sm">{copy.reassurance}</p>
-          </div>
-
-          {/* CTAs */}
-          <div className="space-y-3 pt-2">
-            <a
-              href="/house/nextstep"
-              className="flex items-center justify-center w-full rounded-xl bg-indigo-600 px-6 py-3.5 text-base font-medium text-white hover:bg-indigo-500 transition-colors"
-            >
-              See who can help with your next step
-            </a>
-            <button
-              onClick={() => router.push("/house/path")}
-              className="w-full rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              See your full path
-            </button>
-          </div>
-
-          <p className="text-xs text-slate-400 text-center">
-            This doesn't decide anything for you. It just helps you see where you are.
+        {/* Progress bar */}
+        <div style={{
+          background: "rgba(255,255,255,0.7)", backdropFilter: "blur(12px)",
+          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+          padding: "1.25rem 1.5rem", marginBottom: "1rem",
+          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
+            Your position
           </p>
-
+          <div style={{ display: "flex", alignItems: "flex-start", position: "relative" }}>
+            <div style={{
+              position: "absolute", top: 13, left: "12.5%", right: "12.5%",
+              height: 2, background: "#e2e8f0", zIndex: 0,
+            }} />
+            <div style={{
+              position: "absolute", top: 13, left: "12.5%",
+              width: `${(currentIndex / (STAGES.length - 1)) * 75}%`,
+              height: 2,
+              background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
+              zIndex: 1,
+              transition: "width 0.6s ease",
+            }} />
+            {STAGES.map((stage, i) => {
+              const isActive = stage === position;
+              const isPast = i < currentIndex;
+              return (
+                <div key={stage} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%", marginBottom: 8,
+                    background: isActive
+                      ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                      : isPast ? "#c7d2fe" : "#fff",
+                    border: isActive ? "none" : isPast ? "2px solid #a5b4fc" : "2px solid #e2e8f0",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 600,
+                    color: isActive ? "#fff" : isPast ? "#6366f1" : "#94a3b8",
+                    boxShadow: isActive ? "0 2px 8px rgba(99,102,241,0.4)" : "none",
+                    transition: "all 0.3s ease",
+                  }}>
+                    {isPast ? "✓" : i + 1}
+                  </div>
+                  <p style={{
+                    fontSize: 10, lineHeight: 1.3, padding: "0 2px",
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? "#6366f1" : "#94a3b8",
+                  }}>
+                    {STAGE_LABELS[stage]}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Position hero card */}
+        <div style={{
+          borderRadius: 24, padding: "1.75rem",
+          background: copy.gradient,
+          border: `1px solid rgba(255,255,255,0.6)`,
+          marginBottom: "1rem",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+        }}>
+          <div style={{ fontSize: 48, marginBottom: "0.75rem" }}>{copy.emoji}</div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: copy.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+            You are here
+          </p>
+          <h1 style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontSize: "clamp(1.75rem, 5vw, 2.25rem)",
+            fontWeight: 400, color: "#1e293b", lineHeight: 1.2,
+            letterSpacing: "-0.02em", marginBottom: 8,
+          }}>
+            {copy.title}
+          </h1>
+          <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.6, margin: 0 }}>
+            {copy.tagline}
+          </p>
+        </div>
+
+        {/* Meaning */}
+        <div style={{
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+          padding: "1.25rem 1.5rem", marginBottom: "1rem",
+          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 18 }}>💡</span>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>What this means</p>
+          </div>
+          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>{copy.meaning}</p>
+        </div>
+
+        {/* What's next */}
+        <div style={{
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+          padding: "1.25rem 1.5rem", marginBottom: "1rem",
+          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 18 }}>➡️</span>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>What comes next</p>
+          </div>
+          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>{copy.next}</p>
+        </div>
+
+        {/* Not yet */}
+        <div style={{
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+          padding: "1.25rem 1.5rem", marginBottom: "1rem",
+          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 18 }}>🚫</span>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>Not yet</p>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {copy.notYet.map(item => (
+              <span key={item} style={{
+                fontSize: 12, padding: "6px 12px", borderRadius: 99,
+                background: "#f1f5f9", color: "#64748b",
+                border: "1px solid #e2e8f0",
+              }}>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Reassurance */}
+        <div style={{
+          background: "rgba(255,255,255,0.6)", borderRadius: 16,
+          padding: "1rem 1.25rem", marginBottom: "1.5rem",
+          border: "1px solid rgba(255,255,255,0.8)",
+          textAlign: "center",
+        }}>
+          <p style={{ fontSize: 14, color: "#64748b", fontStyle: "italic", margin: 0 }}>
+            ✦ {copy.reassurance}
+          </p>
+        </div>
+
+        {/* CTAs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <a href="/house/nextstep" style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "14px 24px", borderRadius: 16,
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            color: "#fff", fontSize: 15, fontWeight: 600,
+            textDecoration: "none",
+            boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
+          }}>
+            See who can help with your next step 🤝
+          </a>
+          <button onClick={() => router.push("/house/path")} style={{
+            padding: "13px 24px", borderRadius: 16,
+            background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)",
+            border: "1.5px solid rgba(99,102,241,0.2)",
+            color: "#6366f1", fontSize: 15, fontWeight: 500,
+            cursor: "pointer", fontFamily: "inherit",
+          }}>
+            See your full path 🗺️
+          </button>
+        </div>
+
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>
+          This doesn't decide anything for you. It just helps you see where you are.
+        </p>
+
       </div>
     </main>
   );

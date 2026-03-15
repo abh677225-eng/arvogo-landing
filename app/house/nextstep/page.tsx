@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const meshBg = `
+  radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.2) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 20%, rgba(14,165,233,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 20% 80%, rgba(16,185,129,0.1) 0%, transparent 50%),
+  #eef2ff
+`;
+
 type PositionKey = "exploring" | "considering" | "preparing" | "in-process";
 
 function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
@@ -17,339 +25,336 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   return "exploring";
 }
 
-const POSITION_INTRO: Record<PositionKey, { heading: string; subtext: string }> = {
+const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
   exploring: {
-    heading: "Not ready for a broker yet — and that's fine",
-    subtext:
-      "Most people at this stage just want a rough sense of what's possible. A good broker won't pressure you — they'll help you understand your position so the decision feels less abstract.",
+    heading: "Not ready for a broker yet — and that's fine 👋",
+    subtext: "A good broker won't pressure you. They'll help you understand your position so the decision feels less abstract.",
   },
   considering: {
-    heading: "A conversation, not a commitment",
-    subtext:
-      "Talking to a broker at this stage is low-stakes. You're not applying for anything. You're just getting a clearer picture of what's realistic before you decide whether to go further.",
+    heading: "A conversation, not a commitment 💬",
+    subtext: "You're not applying for anything. You're just getting a clearer picture of what's realistic before deciding whether to go further.",
   },
   preparing: {
-    heading: "This is a good time to talk to a broker",
-    subtext:
-      "Before narrowing in on a home, it helps to know your borrowing capacity and what lenders will look at. A broker can give you that clarity without locking you into anything.",
+    heading: "This is a good time to talk to a broker 🎯",
+    subtext: "Before narrowing in on a home, know your borrowing capacity. A broker can give you that clarity without locking you into anything.",
   },
   "in-process": {
-    heading: "You probably need a broker now",
-    subtext:
-      "If you're making offers or close to it, having a broker in your corner makes a real difference — on speed, on lender choice, and on avoiding mistakes that are hard to undo.",
+    heading: "You probably need a broker now ⚡",
+    subtext: "If you're making offers or close to it, having a broker in your corner makes a real difference on speed, lender choice, and avoiding mistakes.",
   },
 };
 
-type Provider = {
-  name: string;
-  title: string;
-  blurb: string;
-  tag: string;
-};
-
-const PROVIDERS: Provider[] = [
+const PROVIDERS = [
   {
     name: "Sarah Mitchell",
+    initials: "SM",
     title: "Mortgage Broker · Melbourne",
-    blurb:
-      "Works with first home buyers and people navigating complex income situations. No jargon, no rush.",
-    tag: "First home buyers",
+    blurb: "Works with first home buyers and people navigating complex income situations. No jargon, no rush.",
+    tag: "🏠 First home buyers",
+    rating: "4.9",
+    reviews: 47,
   },
   {
     name: "James Okafor",
+    initials: "JO",
     title: "Mortgage Broker · Melbourne & surrounds",
-    blurb:
-      "Specialises in helping buyers understand their real borrowing position before they start looking at homes.",
-    tag: "Borrowing clarity",
+    blurb: "Specialises in helping buyers understand their real borrowing position before they start looking at homes.",
+    tag: "💡 Borrowing clarity",
+    rating: "4.8",
+    reviews: 63,
   },
   {
     name: "Priya Nair",
+    initials: "PN",
     title: "Mortgage Broker · Victoria-wide",
-    blurb:
-      "Focuses on making the lending process feel manageable — especially for buyers who find financial decisions stressful.",
-    tag: "Stress-free process",
+    blurb: "Focuses on making the lending process feel manageable — especially for buyers who find financial decisions stressful.",
+    tag: "😌 Stress-free process",
+    rating: "5.0",
+    reviews: 31,
   },
 ];
 
-type LeadForm = {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-};
-
+type LeadForm = { name: string; email: string; phone: string; message: string };
 type SubmitState = "idle" | "submitting" | "done";
-
-function ProviderCard({
-  provider,
-  position,
-  onConnect,
-}: {
-  provider: Provider;
-  position: PositionKey;
-  onConnect: (provider: Provider) => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium text-sm">
-            {provider.name.split(" ").map((n) => n[0]).join("")}
-          </div>
-          <div>
-            <p className="font-medium text-slate-800">{provider.name}</p>
-            <p className="text-xs text-slate-500">{provider.title}</p>
-          </div>
-        </div>
-        <span className="shrink-0 text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
-          {provider.tag}
-        </span>
-      </div>
-      <p className="text-sm text-slate-600 leading-relaxed">{provider.blurb}</p>
-      <button
-        onClick={() => onConnect(provider)}
-        className="w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
-      >
-        Connect with {provider.name.split(" ")[0]}
-      </button>
-    </div>
-  );
-}
-
-function LeadModal({
-  provider,
-  position,
-  onClose,
-  onSubmit,
-  submitState,
-}: {
-  provider: Provider;
-  position: PositionKey;
-  onClose: () => void;
-  onSubmit: (form: LeadForm) => void;
-  submitState: SubmitState;
-}) {
-  const [form, setForm] = useState<LeadForm>({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-
-  function set(key: keyof LeadForm, value: string) {
-    setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  const isValid = form.name.trim() && form.email.trim();
-
-  if (submitState === "done") {
-    return (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-6"
-        onClick={onClose}
-      >
-        <div
-          className="w-full max-w-md rounded-3xl bg-white p-10 shadow-lg space-y-4 text-center"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mx-auto h-12 w-12 rounded-full bg-green-50 flex items-center justify-center">
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-slate-800">Request sent</h2>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            {provider.name.split(" ")[0]} will be in touch shortly. There's no obligation — just a conversation.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-4 text-sm text-slate-400 hover:text-slate-600"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-6"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-3xl bg-white p-8 shadow-lg space-y-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold text-slate-800">
-            Connect with {provider.name.split(" ")[0]}
-          </h2>
-          <p className="text-sm text-slate-500">
-            No obligation. {provider.name.split(" ")[0]} will reach out for a relaxed introductory chat.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs text-slate-500">Your name</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="e.g. Alex"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-slate-400"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-slate-500">Email address</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => set("email", e.target.value)}
-              placeholder="you@email.com"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-slate-400"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-slate-500">Phone (optional)</label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-              placeholder="04xx xxx xxx"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-slate-400"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-slate-500">Anything you'd like them to know? (optional)</label>
-            <textarea
-              value={form.message}
-              onChange={(e) => set("message", e.target.value)}
-              placeholder="e.g. First home buyer, not sure where to start..."
-              rows={3}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-slate-400 resize-none"
-            />
-          </div>
-        </div>
-
-        <button
-          onClick={() => isValid && onSubmit(form)}
-          disabled={!isValid || submitState === "submitting"}
-          className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          {submitState === "submitting" ? "Sending..." : "Send introduction request"}
-        </button>
-
-        <p className="text-xs text-slate-400 text-center">
-          Your details are only shared with {provider.name.split(" ")[0]}. No spam.
-        </p>
-
-        <button
-          onClick={onClose}
-          className="w-full text-xs text-slate-400 hover:text-slate-600"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function HouseNextStep() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("exploring");
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<typeof PROVIDERS[0] | null>(null);
+  const [form, setForm] = useState<LeadForm>({ name: "", email: "", phone: "", message: "" });
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
 
   useEffect(() => {
     const raw = sessionStorage.getItem("houseAnswers");
     if (!raw) return;
-    const answers: (string | null)[] = JSON.parse(raw);
-    setPosition(mapAnswersToPosition(answers));
+    setPosition(mapAnswersToPosition(JSON.parse(raw)));
+    setTimeout(() => setVisible(true), 100);
   }, []);
 
-  const intro = POSITION_INTRO[position];
+  const intro = INTROS[position];
 
-  async function handleSubmit(form: LeadForm) {
+  async function handleSubmit() {
+    if (!form.name.trim() || !form.email.trim()) return;
     setSubmitState("submitting");
-    // TODO: Replace with your real lead capture endpoint
-    // e.g. POST to /api/leads with { ...form, provider: selectedProvider, position }
-    await new Promise((res) => setTimeout(res, 1200));
+    await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, provider: selectedProvider?.name, position }),
+    });
     setSubmitState("done");
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-sky-50 to-white text-slate-800">
-      <div className="mx-auto max-w-2xl px-6 py-24">
+    <main style={{
+      minHeight: "100vh", background: meshBg,
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      padding: "0 1rem",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+
+      <div style={{
+        maxWidth: 520, margin: "0 auto",
+        paddingTop: "4rem", paddingBottom: "4rem",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease",
+      }}>
 
         {/* Back */}
-        <div className="flex justify-end mb-8">
-          <button
-            onClick={() => router.push("/house/position")}
-            className="text-sm text-slate-500 hover:text-slate-700"
-          >
-            Back
-          </button>
-        </div>
+        <button onClick={() => router.push("/house/position")} style={{
+          background: "none", border: "none", fontSize: 13, color: "#64748b",
+          cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem",
+          display: "flex", alignItems: "center", gap: 6, padding: 0,
+        }}>
+          ← Back
+        </button>
 
         {/* Intro */}
-        <div className="rounded-3xl bg-white p-10 shadow-sm space-y-4 mb-8">
-          <p className="text-sm text-slate-500">A possible next step</p>
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight">
+        <div style={{
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+          padding: "1.5rem", marginBottom: "1.25rem",
+          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+            A possible next step
+          </p>
+          <h1 style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontSize: "clamp(1.4rem, 4vw, 1.75rem)",
+            fontWeight: 400, color: "#1e293b", lineHeight: 1.25,
+            letterSpacing: "-0.02em", marginBottom: 8,
+          }}>
             {intro.heading}
           </h1>
-          <p className="text-lg text-slate-600 leading-relaxed">
-            {intro.subtext}
-          </p>
+          <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{intro.subtext}</p>
         </div>
 
-        {/* Providers */}
-        <div className="space-y-4 mb-10">
+        {/* Provider cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.25rem" }}>
           {PROVIDERS.map((p) => (
-            <ProviderCard
-              key={p.name}
-              provider={p}
-              position={position}
-              onConnect={setSelectedProvider}
-            />
+            <div key={p.name} style={{
+              background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+              borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+              padding: "1.25rem", boxShadow: "0 4px 24px rgba(99,102,241,0.04)",
+            }}>
+              <div style={{ display: "flex", gap: 12, marginBottom: 10 }}>
+                {/* Avatar */}
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13, fontWeight: 700, color: "#fff",
+                }}>
+                  {p.initials}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{p.name}</p>
+                    <span style={{
+                      fontSize: 11, padding: "2px 8px", borderRadius: 99,
+                      background: "#eef2ff", color: "#6366f1",
+                      border: "1px solid #c7d2fe",
+                    }}>
+                      {p.tag}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>{p.title}</p>
+                </div>
+                {/* Rating */}
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", margin: 0 }}>★ {p.rating}</p>
+                  <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{p.reviews} reviews</p>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, marginBottom: 12 }}>{p.blurb}</p>
+              <button
+                onClick={() => { setSelectedProvider(p); setSubmitState("idle"); setForm({ name: "", email: "", phone: "", message: "" }); }}
+                style={{
+                  width: "100%", padding: "10px 16px", borderRadius: 12,
+                  background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+                  border: "1.5px solid rgba(99,102,241,0.2)",
+                  color: "#4338ca", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Connect with {p.name.split(" ")[0]} 👋
+              </button>
+            </div>
           ))}
         </div>
 
         {/* Soft footer */}
-        <div className="rounded-xl bg-slate-50 border border-slate-100 p-5 space-y-1">
-          <p className="text-sm font-medium text-slate-700">Not ready to talk to anyone yet?</p>
-          <p className="text-sm text-slate-500">
+        <div style={{
+          background: "rgba(255,255,255,0.7)", borderRadius: 16,
+          padding: "1rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)",
+        }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "#475569", marginBottom: 3 }}>
+            Not ready to talk to anyone yet?
+          </p>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>
             That's completely fine.{" "}
-            <button
-              onClick={() => router.push("/serviceability")}
-              className="text-indigo-600 hover:underline underline-offset-2"
-            >
+            <a href="/serviceability" style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>
               Try the serviceability calculator
-            </button>{" "}
-            to get a rough sense of your position on your own terms.
+            </a>{" "}
+            to get a rough sense on your own terms.
           </p>
         </div>
 
-        {/* Footer note */}
-        <p className="text-xs text-slate-400 text-center mt-8">
-          Providers listed on Arvogo have agreed to our no-pressure introduction guidelines.
+        <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", marginTop: "1.5rem" }}>
+          ✦ Providers on Arvogo follow our no-pressure introduction guidelines.
         </p>
 
       </div>
 
-      {/* Lead modal */}
+      {/* Modal */}
       {selectedProvider && (
-        <LeadModal
-          provider={selectedProvider}
-          position={position}
-          onClose={() => {
-            setSelectedProvider(null);
-            setSubmitState("idle");
+        <div
+          onClick={() => setSelectedProvider(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            background: "rgba(15,23,42,0.5)",
+            backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "1rem",
           }}
-          onSubmit={handleSubmit}
-          submitState={submitState}
-        />
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: "100%", maxWidth: 420,
+              background: "rgba(255,255,255,0.98)",
+              borderRadius: 24, padding: "2rem",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+              border: "1px solid rgba(255,255,255,0.9)",
+            }}
+          >
+            {submitState === "done" ? (
+              <div style={{ textAlign: "center", padding: "1rem 0" }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: "50%", margin: "0 auto 1rem",
+                  background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 26,
+                }}>
+                  ✅
+                </div>
+                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", fontWeight: 400, color: "#1e293b", marginBottom: 8 }}>
+                  Request sent!
+                </h2>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, marginBottom: "1.5rem" }}>
+                  {selectedProvider.name.split(" ")[0]} will be in touch shortly. No obligation — just a conversation.
+                </p>
+                <button onClick={() => setSelectedProvider(null)} style={{
+                  padding: "10px 24px", borderRadius: 12,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}>
+                  Done ✦
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontSize: "1.4rem", fontWeight: 400, color: "#1e293b",
+                  marginBottom: 4,
+                }}>
+                  Connect with {selectedProvider.name.split(" ")[0]}
+                </h2>
+                <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: "1.5rem" }}>
+                  No obligation. Just a relaxed introductory chat.
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1rem" }}>
+                  {[
+                    { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
+                    { key: "email", label: "Email address", placeholder: "you@email.com", type: "email" },
+                    { key: "phone", label: "Phone (optional)", placeholder: "04xx xxx xxx", type: "tel" },
+                  ].map(field => (
+                    <div key={field.key}>
+                      <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{field.label}</label>
+                      <input
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        value={form[field.key as keyof LeadForm]}
+                        onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
+                        style={{
+                          width: "100%", padding: "10px 12px", borderRadius: 10,
+                          border: "1.5px solid #e2e8f0", fontSize: 14,
+                          fontFamily: "inherit", background: "#f8fafc",
+                          outline: "none", boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Anything to share? (optional)</label>
+                    <textarea
+                      placeholder="e.g. First home buyer, not sure where to start..."
+                      value={form.message}
+                      onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                      rows={3}
+                      style={{
+                        width: "100%", padding: "10px 12px", borderRadius: 10,
+                        border: "1.5px solid #e2e8f0", fontSize: 14,
+                        fontFamily: "inherit", background: "#f8fafc",
+                        outline: "none", resize: "none", boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={!form.name.trim() || !form.email.trim() || submitState === "submitting"}
+                  style={{
+                    width: "100%", padding: "13px", borderRadius: 12,
+                    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                    border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
+                    cursor: "pointer", fontFamily: "inherit", marginBottom: 8,
+                    opacity: !form.name.trim() || !form.email.trim() ? 0.5 : 1,
+                  }}
+                >
+                  {submitState === "submitting" ? "Sending... ⏳" : "Send introduction request ✦"}
+                </button>
+                <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", margin: 0 }}>
+                  Your details are only shared with {selectedProvider.name.split(" ")[0]}.
+                </p>
+                <button onClick={() => setSelectedProvider(null)} style={{
+                  display: "block", width: "100%", marginTop: 8,
+                  background: "none", border: "none", fontSize: 12,
+                  color: "#94a3b8", cursor: "pointer", fontFamily: "inherit",
+                }}>
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </main>
   );
