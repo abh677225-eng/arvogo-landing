@@ -272,6 +272,7 @@ export default function ServiceabilityCalculator() {
         {/* Liabilities */}
         <div className="rounded-3xl bg-white p-8 shadow-sm space-y-5 mb-6">
           <h2 className="text-sm font-medium uppercase tracking-wide text-slate-400">Monthly liabilities</h2>
+		  <p className="text-xs text-slate-400 italic">Living expenses (groceries, utilities, transport etc) are automatically estimated using the bank HEM benchmark — only enter actual loan repayments below.</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Car loan repayment</label>
