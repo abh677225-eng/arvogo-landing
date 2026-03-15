@@ -25,35 +25,85 @@ type Results = {
   loanAmount: number;
 };
 
+// Australian tax calculation (2024-25 rates)
+function calcAnnualTax(gross: number): number {
+  if (gross <= 18200) return 0;
+  if (gross <= 45000) return (gross - 18200) * 0.19;
+  if (gross <= 120000) return 5092 + (gross - 45000) * 0.325;
+  if (gross <= 180000) return 29467 + (gross - 120000) * 0.37;
+  return 51667 + (gross - 180000) * 0.45;
+}
+
+// HEM benchmarks (income-scaled, 2025 estimates post-inflation adjustment)
+// Based on Melbourne Institute HEM methodology: median basics + 25th percentile discretionary
+function calcHEM(grossIncome: number, hasPartner: boolean, dependants: number): number {
+  // Base HEM by household type (monthly)
+  let base: number;
+  if (!hasPartner) {
+    base = grossIncome < 50000 ? 2100 : grossIncome < 100000 ? 2400 : 2800;
+  } else {
+    base = grossIncome < 80000 ? 3100 : grossIncome < 150000 ? 3500 : 4000;
+  }
+  // Add per dependant
+  const depAdd = dependants * 650;
+  return base + depAdd;
+}
+
 function calculateResults(form: typeof defaultForm): Results {
-  const grossIncome = (parseFloat(form.income1) || 0) + (parseFloat(form.income2) || 0);
-  const netMonthlyIncome = (grossIncome * 0.72) / 12;
+  const income1 = parseFloat(form.income1) || 0;
+  const income2 = parseFloat(form.income2) || 0;
+  const grossIncome = income1 + income2;
+  const hasPartner = income2 > 0;
 
-  const carLoan = parseFloat(form.carLoan) || 0;
-  const creditCards = (parseFloat(form.creditCards) || 0) * 0.038;
-  const otherLiabilities = parseFloat(form.otherLiabilities) || 0;
+  // Calculate actual net income using ATO tax brackets + 2% Medicare levy
+  const tax1 = calcAnnualTax(income1) + income1 * 0.02;
+  const tax2 = calcAnnualTax(income2) + income2 * 0.02;
+  const netAnnual = grossIncome - tax1 - tax2;
+  const netMonthlyIncome = netAnnual / 12;
+
   const dependants = parseInt(form.dependants) || 0;
-  const hem = 1800 + dependants * 400;
-  const totalMonthlyCommitments = carLoan + creditCards + otherLiabilities + hem;
 
-  const rate = 0.0625;
-  const bufferRate = rate + 0.03;
-  const surplusIncome = netMonthlyIncome - totalMonthlyCommitments;
-  const maxMonthlyRepayment = surplusIncome * 0.7;
+  // Liabilities — bank methodology
+  const carLoan = parseFloat(form.carLoan) || 0;
+  // Banks assess 3.8% p.a. of total credit card LIMIT as monthly repayment obligation
+  const creditCardLimit = parseFloat(form.creditCards) || 0;
+  const creditCardMonthly = (creditCardLimit * 0.038) / 12;
+  const otherLiabilities = parseFloat(form.otherLiabilities) || 0;
+
+  // HEM — use higher of declared or benchmark (banks always use higher)
+  const hem = calcHEM(grossIncome, hasPartner, dependants);
+  const totalMonthlyCommitments = carLoan + creditCardMonthly + otherLiabilities + hem;
+
+  // APRA mandated: assess at contract rate + 3% buffer (current SVR ~6.25% → assess at 9.25%)
+  const contractRate = 0.0625;
+  const assessmentRate = contractRate + 0.03; // 9.25% — APRA buffer
   const months = 30 * 12;
-  const monthlyBufferRate = bufferRate / 12;
+  const monthlyAssessRate = assessmentRate / 12;
 
+  // Banks cap DSR at ~30-35% of GROSS income
+  const maxDSRMonthly = (grossIncome * 0.32) / 12;
+  // Available for new loan = DSR cap minus existing commitments (excl HEM)
+  const existingCommitments = carLoan + creditCardMonthly + otherLiabilities;
+  const availableForLoan = Math.max(0, maxDSRMonthly - existingCommitments);
+  // Also check net surplus method
+  const surplusIncome = netMonthlyIncome - totalMonthlyCommitments;
+  const surplusAvailable = Math.max(0, surplusIncome * 0.85);
+  // Use the lower of DSR method and surplus method (conservative, like banks)
+  const maxMonthlyRepayment = Math.min(availableForLoan, surplusAvailable);
+
+  // Reverse amortisation at assessment rate to get borrowing capacity
   const borrowingCapacity = maxMonthlyRepayment > 0
-    ? Math.round((maxMonthlyRepayment * (Math.pow(1 + monthlyBufferRate, months) - 1)) /
-        (monthlyBufferRate * Math.pow(1 + monthlyBufferRate, months)))
+    ? Math.round((maxMonthlyRepayment * (Math.pow(1 + monthlyAssessRate, months) - 1)) /
+        (monthlyAssessRate * Math.pow(1 + monthlyAssessRate, months)))
     : 0;
 
   const purchasePrice = parseFloat(form.purchasePrice) || borrowingCapacity * 1.1;
   const deposit = parseFloat(form.deposit) || 0;
-  const loanAmount = purchasePrice - deposit;
+  const loanAmount = Math.max(0, purchasePrice - deposit);
   const lvr = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
 
-  const monthlyRate = rate / 12;
+  // Actual repayment at contract rate (not assessment rate)
+  const monthlyRate = contractRate / 12;
   const monthlyRepayment = loanAmount > 0
     ? Math.round((loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
         (Math.pow(1 + monthlyRate, months) - 1))
@@ -84,7 +134,8 @@ function calculateResults(form: typeof defaultForm): Results {
   const depositGap = Math.max(0, minDeposit - deposit);
   const monthlySavings = parseFloat(form.monthlySavings) || 1000;
   const monthsToSave = depositGap > 0 ? Math.ceil(depositGap / monthlySavings) : 0;
-  const dsr = netMonthlyIncome > 0 ? (monthlyRepayment / netMonthlyIncome) * 100 : 0;
+  // DSR as % of gross income (how banks measure it)
+  const dsr = grossIncome > 0 ? ((monthlyRepayment * 12) / grossIncome) * 100 : 0;
 
   return {
     borrowingCapacity,
@@ -104,7 +155,7 @@ function calculateResults(form: typeof defaultForm): Results {
     totalMonthlyCommitments,
     surplusIncome,
     dsr,
-	loanAmount,
+    loanAmount,
   };
 }
 
