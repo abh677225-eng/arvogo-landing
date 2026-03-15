@@ -7,12 +7,14 @@ export default function HouseEntry() {
           <div className="space-y-8">
 
             <h1 className="text-3xl font-semibold leading-tight">
-              Thinking about buying your first home?
+              Thinking about buying a house?
             </h1>
 
             <p className="text-lg text-slate-600 leading-relaxed">
-              This helps you get oriented — where you are right now,
-              what usually comes next, and what you don’t need to worry about yet.
+              This helps you get oriented —
+              where you are in the process,
+              what usually comes next,
+              and what doesn’t need attention yet.
             </p>
 
             <a
@@ -23,7 +25,7 @@ export default function HouseEntry() {
             </a>
 
             <p className="text-sm text-slate-500">
-              No sign-up. No sales. Just clarity.
+              No sign-up. No advice. No pressure.
             </p>
 
           </div>

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 function Step({
   number,
   title,
   core,
-  how,
   reassurance,
+  how,
   isLater = false,
 }: {
   number: number;
@@ -59,8 +60,8 @@ function Step({
           className="mt-6 text-sm text-indigo-600 hover:underline underline-offset-4"
         >
           {open
-            ? "Hide how people usually do this"
-            : "How people usually do this"}
+            ? "Hide how people usually approach this"
+            : "How people usually approach this"}
         </button>
 
         {open && (
@@ -75,15 +76,60 @@ function Step({
   );
 }
 
+type PositionKey =
+  | "exploring"
+  | "considering"
+  | "preparing"
+  | "in-process";
+
+function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
+  const stability = answers[2];
+  const execution = answers[3];
+
+  if (execution === "I’m already making offers") return "in-process";
+
+  if (execution === "I’m actively looking") {
+    if (stability === "Uncertain" || stability === "Hard to say") {
+      return "considering";
+    }
+    return "preparing";
+  }
+
+  if (execution === "I’ve been browsing a bit") return "considering";
+
+  return "exploring";
+}
+
 export default function HousePath() {
+  const router = useRouter();
+  const [position, setPosition] =
+    useState<PositionKey>("exploring");
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("houseAnswers");
+    if (!raw) return;
+    const answers = JSON.parse(raw);
+    setPosition(mapAnswersToPosition(answers));
+  }, []);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-sky-50 to-white text-slate-800">
       <div className="mx-auto max-w-3xl px-6 py-24">
 
         <div className="rounded-2xl bg-white p-10 shadow-sm">
 
+          {/* Top bar */}
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={() => router.push("/house/position")}
+              className="text-sm text-slate-500 hover:text-slate-700"
+            >
+              Back
+            </button>
+          </div>
+
           <h1 className="text-2xl font-semibold mb-10">
-            A sensible order of things
+            A way to keep the decision contained
           </h1>
 
           <div className="relative">
@@ -93,44 +139,45 @@ export default function HousePath() {
 
               <Step
                 number={1}
-                title="Get a rough sense of what’s affordable"
-                core="This is about understanding a range, not a precise number. The goal is to set boundaries before getting emotionally attached."
-                reassurance="You don’t need pre-approval yet."
-                how="Most people start by looking at typical price ranges in areas they’d consider, just to get a feel for what’s common. Some then sanity-check that by searching for things like “borrowing power calculator” or “mortgage repayment calculator” online, and playing with the numbers to understand rough ranges — not to arrive at a final answer."
+                title="Clarify whether buying is even the right category"
+                core="At the beginning, the real question usually isn’t which house to buy. It’s whether ownership actually fits what you want right now."
+                reassurance="It’s okay if the answer is no — or not yet."
+                how="People often reflect on what’s prompting the idea of buying, and what they hope ownership would change. This is more about orientation than research."
               />
 
               <Step
                 number={2}
-                title="Understand the real costs"
-                core="Buying a home involves more than the purchase price. There are upfront costs, ongoing costs, and one-off expenses that are easy to underestimate."
-                how="People usually get clarity here by looking at a simple breakdown of common costs — such as upfront fees, ongoing ownership costs, and one-off expenses — rather than trying to calculate everything precisely."
+                title="Understand the boundaries, not the numbers"
+                core="Before getting specific, it helps to have a loose sense of constraints — what feels comfortable, risky, or unrealistic."
+                reassurance="Precision isn’t useful here."
+                how="Most people do this informally at first, just to avoid drifting into situations that would clearly feel stressful or misaligned later."
               />
 
               <Step
                 number={3}
-                title="Narrow what kind of home actually fits you"
-                core="Before you look seriously, it helps to be clear on trade-offs like space versus location, or flexibility versus certainty."
-                reassurance="You don’t need an agent yet."
-                how="This step is often more about reflection than searching — thinking through what matters most day-to-day, and which compromises you’re comfortable making."
+                title="Get clear on trade-offs you’re willing to live with"
+                core="Every home involves compromises. Knowing which ones matter to you prevents getting pulled into decisions that don’t actually fit."
+                reassurance="You don’t need to look at properties yet."
+                how="This usually looks like thinking through day-to-day life — space, location, flexibility — rather than searching listings."
               />
 
               <div className="ml-4 my-6 text-sm text-slate-500">
-                Later, when the above feels clear
+                Later, once the earlier pieces feel clear
               </div>
 
               <Step
                 number={4}
-                title="Get finance confidence"
-                core="Once the earlier steps feel clear, some people choose to understand what’s realistically available to them financially."
-                how="This often involves talking to a lender or broker to confirm assumptions, rather than to lock anything in."
+                title="Check what’s realistically possible"
+                core="Only after the earlier steps feel grounded does it make sense to confirm what’s feasible financially."
+                how="People often talk to a lender or broker here to validate assumptions, not to commit to anything."
                 isLater
               />
 
               <Step
                 number={5}
-                title="Start inspections and offers"
-                core="This is the stage where things move faster and decisions carry more weight."
-                how="Most people reach this point after looping through the earlier steps a few times, feeling informed rather than rushed."
+                title="Move into inspections and offers"
+                core="This is the phase where decisions become more concrete and harder to reverse."
+                how="Most people reach this point after looping back through earlier steps a few times, feeling informed rather than rushed."
                 isLater
               />
 
@@ -142,7 +189,7 @@ export default function HousePath() {
               You don’t need to do all of this now.
             </p>
             <p className="text-slate-600">
-              Many people move back and forth between early steps before moving on.
+              People often move back and forth between earlier steps before anything else makes sense.
               That’s normal.
             </p>
           </div>
