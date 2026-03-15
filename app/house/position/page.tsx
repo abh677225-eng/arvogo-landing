@@ -13,37 +13,37 @@ const POSITION_COPY = {
   exploring: {
     title: "Exploring whether buying matters right now",
     description:
-      "Buying a house isn’t something you’re actively trying to do. It’s more an idea that’s surfaced, and you’re noticing it.",
+      "Buying a house isn't something you're actively trying to do. It's more an idea that's surfaced, and you're noticing it.",
     meaning:
-      "At this stage, there’s nothing you need to decide. Many people stay here for a long time — and many decide not to buy at all.",
+      "At this stage, there's nothing you need to decide. Many people stay here for a long time — and many decide not to buy at all.",
     next:
-      "For now, it’s enough to get a clearer sense of what owning a home would actually change in your life, and what it wouldn’t.",
+      "For now, it's enough to get a clearer sense of what owning a home would actually change in your life, and what it wouldn't.",
     notYet: ["Looking at listings", "Mortgages", "Prices or timing"],
-    reassurance: "There’s no rush to move past this.",
+    reassurance: "There's no rush to move past this.",
   },
 
   considering: {
     title: "Thinking about buying, without urgency",
     description:
-      "Buying a house feels like a real possibility, but it doesn’t feel pressing or time-bound.",
+      "Buying a house feels like a real possibility, but it doesn't feel pressing or time-bound.",
     meaning:
-      "You’re not choosing a home yet. You’re deciding whether this is something you want to take more seriously at all.",
+      "You're not choosing a home yet. You're deciding whether this is something you want to take more seriously at all.",
     next:
-      "It can help to untangle what’s coming from you, and what’s coming from outside pressure or expectations.",
+      "It can help to untangle what's coming from you, and what's coming from outside pressure or expectations.",
     notYet: [
       "Viewing homes",
       "Talking to lenders",
       "Comparing options",
     ],
-    reassurance: "It’s normal to sit here for a while.",
+    reassurance: "It's normal to sit here for a while.",
   },
 
   preparing: {
     title: "Preparing before taking action",
     description:
-      "You’re engaging with the idea of buying more deliberately, but you haven’t committed to a specific home.",
+      "You're engaging with the idea of buying more deliberately, but you haven't committed to a specific home.",
     meaning:
-      "This phase is about getting your footing. It’s still okay to slow down, pause, or change direction.",
+      "This phase is about getting your footing. It's still okay to slow down, pause, or change direction.",
     next:
       "Before narrowing in on a home, it helps to make sure the rest of your life can support this decision.",
     notYet: [
@@ -57,17 +57,17 @@ const POSITION_COPY = {
   "in-process": {
     title: "Already in the buying process",
     description:
-      "You’re actively pursuing a home, and some steps may already feel hard to undo.",
+      "You're actively pursuing a home, and some steps may already feel hard to undo.",
     meaning:
-      "The goal right now isn’t speed. It’s staying clear-headed and steady as decisions stack up.",
+      "The goal right now isn't speed. It's staying clear-headed and steady as decisions stack up.",
     next:
       "Keeping decisions small and sequential can make this phase feel more manageable.",
     notYet: [
       "Getting the perfect outcome",
-      "Trying to ‘win’ the process",
+      "Trying to 'win' the process",
       "Comparing yourself to others",
     ],
-    reassurance: "Even now, it’s okay to pause.",
+    reassurance: "Even now, it's okay to pause.",
   },
 };
 
@@ -77,18 +77,18 @@ function mapAnswersToPosition(
   const stability = answers[2];
   const execution = answers[3];
 
-  if (execution === "I’m already making offers") {
+  if (execution === "I'm already making offers") {
     return "in-process";
   }
 
-  if (execution === "I’m actively looking") {
+  if (execution === "I'm actively looking") {
     if (stability === "Uncertain" || stability === "Hard to say") {
       return "considering";
     }
     return "preparing";
   }
 
-  if (execution === "I’ve been browsing a bit") {
+  if (execution === "I've been browsing a bit") {
     return "considering";
   }
 
@@ -165,7 +165,7 @@ export default function HousePosition() {
           {/* Not yet */}
           <div className="space-y-2">
             <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">
-              What doesn’t need attention yet
+              What doesn't need attention yet
             </h2>
             <ul className="space-y-1 text-slate-700">
               {copy.notYet.map((item) => (
@@ -186,13 +186,17 @@ export default function HousePosition() {
 
           {/* Footer */}
           <p className="text-sm text-slate-500">
-            This doesn’t decide anything for you. It just helps you see where you are.
+            This doesn't decide anything for you. It just helps you see where you are.
           </p>
-href="/house/nextstep"
-  className="inline-flex items-center justify-center mt-4 rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 transition-colors"
->
-  See who can help with your next step
-</a>
+
+          {/* Next step CTA */}
+          <a
+            href="/house/nextstep"
+            className="inline-flex items-center justify-center w-full rounded-xl bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-500 transition-colors"
+          >
+            See who can help with your next step
+          </a>
+
         </div>
       </div>
     </main>
