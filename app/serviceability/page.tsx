@@ -22,6 +22,7 @@ type Results = {
   totalMonthlyCommitments: number;
   surplusIncome: number;
   dsr: number;
+  loanAmount: number;
 };
 
 function calculateResults(form: typeof defaultForm): Results {
@@ -103,6 +104,7 @@ function calculateResults(form: typeof defaultForm): Results {
     totalMonthlyCommitments,
     surplusIncome,
     dsr,
+	loanAmount,
   };
 }
 
