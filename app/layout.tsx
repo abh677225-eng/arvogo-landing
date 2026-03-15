@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   // Replace with your actual Google Search Console verification code
   // Get it from: search.google.com/search-console → Add property → HTML tag method
   verification: {
-    google: "oIJ-9BjH8Z0-rLHSaAIzmGL3ujKZP8id2O-Ho",
+    google: "oIJ-9BjH8Z0-rLHSaAIzmGL3ujKZP8id2O-HoO7oaDg",
   },
 };
 
