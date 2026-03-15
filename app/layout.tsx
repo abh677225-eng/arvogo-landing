@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Arvogo — Simplifying Life's Complex Decisions",
-    description: "Understand where you are, what comes next, and what you don't need to worry about yet.",
+    title: "Arvogo — Simplifying Life's Complex Decisions, Step by Step",
+    description: "Arvogo helps you navigate through complex life decisions — from buying a home to understanding your borrowing position. Get oriented in minutes. No jargon, no advice, no sign-up. Built for Australia.",
     images: ["/og-image.png"],
   },
   robots: {
