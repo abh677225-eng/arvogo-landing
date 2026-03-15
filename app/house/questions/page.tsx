@@ -140,7 +140,13 @@ export default function HouseQuestions() {
     <main
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #eef2ff 0%, #e0f2fe 50%, #f0fdf4 100%)",
+        background: `
+  radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.2) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 20%, rgba(14,165,233,0.15) 0%, transparent 50%),
+  radial-gradient(ellipse at 20% 80%, rgba(16,185,129,0.1) 0%, transparent 50%),
+  #eef2ff
+`,
         fontFamily: "'DM Sans', system-ui, sans-serif",
         display: "flex",
         alignItems: "center",
