@@ -207,7 +207,7 @@ const AUCTION_STEPS = [
   },
 ];
 
-function StepCard({ step, highlight }: { step: typeof COMMON_STEPS[0]; highlight?: boolean }) {
+
   const [open, setOpen] = useState(false);
 
   return (
