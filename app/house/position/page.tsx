@@ -11,88 +11,90 @@ const meshBg = `
   #eef2ff
 `;
 
-type PositionKey = "exploring" | "considering" | "preparing" | "in-process";
+type PositionKey = "browsing" | "searching" | "buying";
+
+const FHOG: Record<string, { amount: number; threshold: number }> = {
+  VIC: { amount: 10000, threshold: 750000 },
+  NSW: { amount: 10000, threshold: 600000 },
+  QLD: { amount: 15000, threshold: 750000 },
+  SA:  { amount: 15000, threshold: 650000 },
+  WA:  { amount: 10000, threshold: 750000 },
+  TAS: { amount: 10000, threshold: 750000 },
+  ACT: { amount: 0,     threshold: 0 },
+  NT:  { amount: 10000, threshold: 750000 },
+};
+
+function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
+  const progress = answers[0];
+  const budget = answers[1];
+  if (progress === "I'm making or about to make offers") return "buying";
+  if (progress === "I'm actively looking at properties") return "searching";
+  return "browsing";
+}
 
 const POSITIONS: Record<PositionKey, {
   emoji: string;
   title: string;
   tagline: string;
-  meaning: string;
-  next: string;
-  notYet: string[];
-  reassurance: string;
   gradient: string;
   accent: string;
+  nextTitle: string;
+  nextText: string;
+  nextCTA: string;
+  nextHref: string;
+  secondaryCTA?: string;
+  secondaryHref?: string;
 }> = {
-  exploring: {
-    emoji: "🌱",
-    title: "Exploring",
-    tagline: "You're noticing the idea — not committing to it.",
-    meaning: "This is a completely valid place to be. There's nothing to decide yet, and many people stay here for a long time — some decide not to buy at all, and that's equally fine.",
-    next: "For now, it's worth getting a clearer sense of what ownership would actually change in your life — and what it probably wouldn't.",
-    notYet: ["Researching suburbs 🏘️", "Mortgage calculations 🔢", "Timing the market 📈"],
-    reassurance: "There's no rush to move past this.",
-    gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-    accent: "#059669",
-  },
-  considering: {
-    emoji: "🤔",
-    title: "Considering",
-    tagline: "Buying feels like a real possibility — but it's not urgent.",
-    meaning: "You're not choosing a home yet. Right now you're figuring out whether this is something you actually want to pursue — and that's exactly the right question to be sitting with.",
-    next: "It helps to untangle what's genuinely coming from you versus what's coming from outside pressure or expectation.",
-    notYet: ["Viewing homes 🏠", "Talking to lenders 🏦", "Comparing suburbs 🗺️"],
-    reassurance: "It's normal to sit here for a while.",
+  browsing: {
+    emoji: "👀",
+    title: "Just browsing",
+    tagline: "You're in the early stages — and that's completely normal.",
     gradient: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
     accent: "#2563eb",
+    nextTitle: "Start by getting a feel for the market",
+    nextText: "The best thing you can do right now is browse listings — not to buy, but to understand what's out there. What areas interest you? What does your budget actually get you? Browsing with curiosity beats researching in the abstract.",
+    nextCTA: "Browse listings",
+    nextHref: "/house/nextstep",
+    secondaryCTA: "Check your borrowing capacity",
+    secondaryHref: "/serviceability",
   },
-  preparing: {
-    emoji: "🗺️",
-    title: "Preparing",
-    tagline: "You're engaging deliberately — without committing yet.",
-    meaning: "This phase is about getting your footing before things get real. It's still completely okay to slow down, change direction, or take more time.",
-    next: "Before narrowing in on a specific home, it helps to make sure the rest of your life can comfortably support this decision.",
-    notYet: ["Making offers 📝", "Rushing timelines ⏩", "Locking in decisions 🔒"],
-    reassurance: "Taking time here often makes the later steps feel much calmer.",
+  searching: {
+    emoji: "🔍",
+    title: "Actively searching",
+    tagline: "You're looking seriously — now get your finances locked in.",
     gradient: "linear-gradient(135deg, #ede9fe, #ddd6fe)",
     accent: "#7c3aed",
+    nextTitle: "Get pre-approval before you go further",
+    nextText: "The most important thing at this stage is knowing your exact borrowing capacity and getting pre-approved. Without it you're searching blind — you might fall in love with something you can't afford, or miss out because you weren't ready to move fast enough.",
+    nextCTA: "Talk to a broker",
+    nextHref: "/house/nextstep",
+    secondaryCTA: "Check your borrowing capacity",
+    secondaryHref: "/serviceability",
   },
-  "in-process": {
-    emoji: "🏃",
-    title: "In process",
-    tagline: "You're actively pursuing a home.",
-    meaning: "The goal right now isn't speed — it's staying clear-headed and grounded as decisions start stacking up and some things become harder to undo.",
-    next: "Keeping decisions small and sequential can make this phase feel more manageable. Create space between commitments where you can.",
-    notYet: ["Fixating on outcomes 🏆", "Comparing your pace to others 👀", "Second-guessing every move 🔄"],
-    reassurance: "Even now, it's okay to pause and re-orient.",
-    gradient: "linear-gradient(135deg, #ffedd5, #fed7aa)",
-    accent: "#ea580c",
+  buying: {
+    emoji: "🏡",
+    title: "Ready to buy",
+    tagline: "You're close — make sure the right people are in your corner.",
+    gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+    accent: "#059669",
+    nextTitle: "Line up your team before you sign anything",
+    nextText: "At this stage you need a mortgage broker, a conveyancer, and a building & pest inspector before you exchange contracts. Getting these sorted now — not after you find a property — means you can move fast when the right one comes up.",
+    nextCTA: "Find the right people",
+    nextHref: "/house/nextstep",
+    secondaryCTA: "Check your borrowing capacity",
+    secondaryHref: "/serviceability",
   },
 };
 
-const STAGES: PositionKey[] = ["exploring", "considering", "preparing", "in-process"];
-const STAGE_LABELS: Record<PositionKey, string> = {
-  exploring: "Exploring",
-  considering: "Considering",
-  preparing: "Preparing",
-  "in-process": "Active",
-};
-
-function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
-  const stability = answers[2];
-  const execution = answers[3];
-  if (execution === "I'm already making offers") return "in-process";
-  if (execution === "I'm actively looking") {
-    if (stability === "Uncertain" || stability === "It's complicated") return "considering";
-    return "preparing";
-  }
-  if (execution === "I've been browsing a bit") return "considering";
-  return "exploring";
-}
+const LISTING_SITES = [
+  { name: "realestate.com.au", emoji: "🏘️", desc: "Australia's largest listing site", url: "https://www.realestate.com.au" },
+  { name: "domain.com.au", emoji: "🏡", desc: "Strong coverage + suburb insights", url: "https://www.domain.com.au" },
+];
 
 export default function HousePosition() {
   const router = useRouter();
-  const [position, setPosition] = useState<PositionKey>("exploring");
+  const [position, setPosition] = useState<PositionKey>("browsing");
+  const [state, setState] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -100,11 +102,14 @@ export default function HousePosition() {
     if (!raw) return;
     const answers: (string | null)[] = JSON.parse(raw);
     setPosition(mapAnswersToPosition(answers));
+    setState(answers[2] || null);
     setTimeout(() => setVisible(true), 100);
   }, []);
 
   const copy = POSITIONS[position];
-  const currentIndex = STAGES.indexOf(position);
+  const fhog = state ? FHOG[state] : null;
+  const showListings = position === "browsing";
+  const showFHOG = state && fhog && fhog.amount > 0;
 
   return (
     <main style={{
@@ -128,63 +133,17 @@ export default function HousePosition() {
           display: "flex", alignItems: "center", gap: 6, padding: 0,
         }}>← Back</button>
 
-        {/* Progress */}
+        {/* Position hero */}
         <div style={{
-          background: "rgba(255,255,255,0.7)", backdropFilter: "blur(12px)",
-          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
-          padding: "1.25rem 1.5rem", marginBottom: "1rem",
-          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
-            Your position
-          </p>
-          <div style={{ display: "flex", alignItems: "flex-start", position: "relative" }}>
-            <div style={{ position: "absolute", top: 13, left: "12.5%", right: "12.5%", height: 2, background: "#e2e8f0", zIndex: 0 }} />
-            <div style={{
-              position: "absolute", top: 13, left: "12.5%",
-              width: `${(currentIndex / (STAGES.length - 1)) * 75}%`,
-              height: 2, background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
-              zIndex: 1, transition: "width 0.6s ease",
-            }} />
-            {STAGES.map((stage, i) => {
-              const isActive = stage === position;
-              const isPast = i < currentIndex;
-              return (
-                <div key={stage} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%", marginBottom: 8,
-                    background: isActive ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : isPast ? "#c7d2fe" : "#fff",
-                    border: isActive ? "none" : isPast ? "2px solid #a5b4fc" : "2px solid #e2e8f0",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 600,
-                    color: isActive ? "#fff" : isPast ? "#6366f1" : "#94a3b8",
-                    boxShadow: isActive ? "0 2px 8px rgba(99,102,241,0.4)" : "none",
-                    transition: "all 0.3s ease",
-                  }}>
-                    {isPast ? "✓" : i + 1}
-                  </div>
-                  <p style={{
-                    fontSize: 10, lineHeight: 1.3, padding: "0 2px",
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? "#6366f1" : "#94a3b8",
-                  }}>{STAGE_LABELS[stage]}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Hero card */}
-        <div style={{
-          borderRadius: 24, padding: "1.75rem",
+          borderRadius: 24, padding: "2rem",
           background: copy.gradient,
           border: "1px solid rgba(255,255,255,0.6)",
           marginBottom: "1rem",
           boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
         }}>
-          <div style={{ fontSize: 48, marginBottom: "0.75rem" }}>{copy.emoji}</div>
+          <div style={{ fontSize: 52, marginBottom: "0.75rem" }}>{copy.emoji}</div>
           <p style={{ fontSize: 11, fontWeight: 700, color: copy.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
-            You are here
+            Where you are
           </p>
           <h1 style={{
             fontFamily: "'DM Serif Display', serif",
@@ -195,89 +154,139 @@ export default function HousePosition() {
           <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.6, margin: 0 }}>{copy.tagline}</p>
         </div>
 
-        {/* Meaning */}
+        {/* One thing to do next */}
         <div style={{
-          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+          background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
           borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
-          padding: "1.25rem 1.5rem", marginBottom: "1rem",
-          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 18 }}>💡</span>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>What this means</p>
-          </div>
-          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>{copy.meaning}</p>
-        </div>
-
-        {/* Next */}
-        <div style={{
-          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
-          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
-          padding: "1.25rem 1.5rem", marginBottom: "1rem",
-          boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 18 }}>➡️</span>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>What comes next</p>
-          </div>
-          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>{copy.next}</p>
-        </div>
-
-        {/* Not yet */}
-        <div style={{
-          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
-          borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
-          padding: "1.25rem 1.5rem", marginBottom: "1rem",
+          padding: "1.5rem", marginBottom: "1rem",
           boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: 18 }}>🚫</span>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>Not yet</p>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, color: "#fff", fontWeight: 700, flexShrink: 0,
+            }}>1</div>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+              The one thing to do next
+            </p>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {copy.notYet.map(item => (
-              <span key={item} style={{
-                fontSize: 12, padding: "6px 12px", borderRadius: 99,
-                background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0",
-              }}>{item}</span>
-            ))}
-          </div>
-        </div>
+          <h2 style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontSize: "1.25rem", fontWeight: 400, color: "#1e293b",
+            lineHeight: 1.3, marginBottom: 10, letterSpacing: "-0.01em",
+          }}>{copy.nextTitle}</h2>
+          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: "0 0 1.25rem" }}>{copy.nextText}</p>
 
-        {/* Reassurance */}
-        <div style={{
-          background: "rgba(255,255,255,0.6)", borderRadius: 16,
-          padding: "1rem 1.25rem", marginBottom: "1.5rem",
-          border: "1px solid rgba(255,255,255,0.8)", textAlign: "center",
-        }}>
-          <p style={{ fontSize: 14, color: "#64748b", fontStyle: "italic", margin: 0 }}>
-            ✦ {copy.reassurance}
-          </p>
-        </div>
-
-        {/* CTAs */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <a href="/house/nextstep" style={{
+          {/* Primary CTA */}
+          <a href={copy.nextHref} style={{
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "14px 24px", borderRadius: 16,
+            padding: "13px 20px", borderRadius: 14,
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            color: "#fff", fontSize: 15, fontWeight: 600, textDecoration: "none",
-            boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
+            color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none",
+            boxShadow: "0 4px 16px rgba(99,102,241,0.3)",
+            marginBottom: 10,
           }}>
-            See who can help with your next step 🤝
+            {copy.nextCTA} →
           </a>
-          <button onClick={() => router.push("/house/path")} style={{
-            padding: "13px 24px", borderRadius: 16,
-            background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)",
-            border: "1.5px solid rgba(99,102,241,0.2)",
-            color: "#6366f1", fontSize: 15, fontWeight: 500,
-            cursor: "pointer", fontFamily: "inherit",
-          }}>
-            See your full path 🗺️
-          </button>
+
+          {/* Secondary CTA */}
+          {copy.secondaryCTA && (
+            <a href={copy.secondaryHref} style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "12px 20px", borderRadius: 14,
+              background: "rgba(255,255,255,0.8)",
+              border: "1.5px solid rgba(99,102,241,0.2)",
+              color: "#6366f1", fontSize: 14, fontWeight: 500, textDecoration: "none",
+            }}>
+              {copy.secondaryCTA}
+            </a>
+          )}
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>
+        {/* Listing sites — browsing only */}
+        {showListings && (
+          <div style={{
+            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+            borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+            padding: "1.25rem 1.5rem", marginBottom: "1rem",
+            boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.75rem" }}>
+              <span style={{ fontSize: 18 }}>🔎</span>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+                Where to browse
+              </p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {LISTING_SITES.map(site => (
+                <a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    background: "#f8fafc", borderRadius: 12, padding: "10px 14px",
+                    border: "1px solid #f1f5f9", textDecoration: "none",
+                    transition: "background 0.15s ease",
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f1f5f9"}
+                  onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f8fafc"}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                    background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+                  }}>{site.emoji}</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{site.name}</p>
+                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{site.desc}</p>
+                  </div>
+                  <span style={{ fontSize: 14, color: "#94a3b8" }}>↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* FHOG — if state known */}
+        {showFHOG && (
+          <div style={{
+            background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+            borderRadius: 20, border: "1px solid rgba(255,255,255,0.6)",
+            padding: "1.25rem 1.5rem", marginBottom: "1rem",
+            boxShadow: "0 4px 24px rgba(16,185,129,0.1)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 20 }}>🎁</span>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+                First home owner grant — {state}
+              </p>
+            </div>
+            <p style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "1.75rem", fontWeight: 400, color: "#1e293b",
+              margin: "0 0 4px",
+            }}>
+              ${fhog!.amount.toLocaleString("en-AU")}
+            </p>
+            <p style={{ fontSize: 13, color: "#047857", margin: 0, lineHeight: 1.6 }}>
+              Available to eligible first home buyers in {state} purchasing a new home under ${fhog!.threshold.toLocaleString("en-AU")}. Confirm eligibility with your broker.
+            </p>
+          </div>
+        )}
+
+        {/* Path link */}
+        <button onClick={() => router.push("/house/path")} style={{
+          width: "100%", padding: "12px", borderRadius: 14,
+          background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          color: "#64748b", fontSize: 13, fontWeight: 500,
+          cursor: "pointer", fontFamily: "inherit",
+          marginBottom: "1rem",
+        }}>
+          See the full path to buying a home →
+        </button>
+
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
           This doesn't decide anything for you. It just helps you see where you are.
         </p>
 

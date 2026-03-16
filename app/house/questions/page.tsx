@@ -8,58 +8,55 @@ type StoredState = {
   index: number;
 };
 
-const questions = [
+const STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
+
+const BASE_QUESTIONS = [
   {
-    text: "Why are you thinking about buying a house?",
-    subtext: "There's no right answer — we just want to understand where this is coming from.",
+    key: "progress",
+    text: "How far have you gone with buying a home?",
+    subtext: "Be honest — there's no wrong answer here.",
     emoji: "🏠",
     options: [
-      "I want something more permanent",
-      "Something in my life is changing",
-      "I feel pressure to consider it",
-      "I'm not really sure",
+      "I haven't really started yet",
+      "I've been browsing listings casually",
+      "I'm actively looking at properties",
+      "I'm making or about to make offers",
     ],
   },
   {
-    text: "Does buying feel time-sensitive right now?",
-    subtext: "This helps us understand how much runway you have.",
-    emoji: "⏳",
+    key: "budget",
+    text: "Do you have a sense of what you can borrow?",
+    subtext: "This helps us understand how far along your finances are.",
+    emoji: "💰",
     options: [
-      "No — I'm just exploring",
-      "A little — there's a loose timeline",
-      "Yes — there's a real deadline",
-      "I'm not sure",
-    ],
-  },
-  {
-    text: "How settled does the rest of your life feel right now?",
-    subtext: "Big decisions are easier when the rest of life feels stable.",
-    emoji: "🌿",
-    options: [
-      "Pretty settled",
-      "In transition",
-      "Uncertain",
-      "It's complicated",
-    ],
-  },
-  {
-    text: "How far have you gone so far?",
-    subtext: "Just so we know which stage to orient you from.",
-    emoji: "📍",
-    options: [
-      "I haven't started yet",
-      "I've been browsing a bit",
-      "I'm actively looking",
-      "I'm already making offers",
+      "No idea yet",
+      "I have a rough idea",
+      "Yes — I know my budget",
     ],
   },
 ];
 
+const STATE_QUESTION = {
+  key: "state",
+  text: "Which state are you buying in?",
+  subtext: "Some professionals only operate in certain states — this helps us show the right people.",
+  emoji: "📍",
+  options: STATES,
+};
+
+function needsStateQuestion(answers: (string | null)[]): boolean {
+  const progress = answers[0];
+  const budget = answers[1];
+  if (!progress || !budget) return false;
+  const isSearching = progress === "I'm actively looking at properties";
+  const isBuying = progress === "I'm making or about to make offers";
+  const knowsBudget = budget === "Yes — I know my budget" || budget === "I have a rough idea";
+  return isSearching || isBuying;
+}
+
 export default function HouseQuestions() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<(string | null)[]>(
-    Array(questions.length).fill(null)
-  );
+  const [answers, setAnswers] = useState<(string | null)[]>([null, null, null]);
   const [index, setIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
@@ -71,7 +68,7 @@ export default function HouseQuestions() {
     const raw = sessionStorage.getItem("houseQuestionState");
     if (!raw) return;
     const parsed: StoredState = JSON.parse(raw);
-    if (parsed.index < questions.length - 1) {
+    if (parsed.index < 3) {
       setAnswers(parsed.answers);
       setIndex(parsed.index);
     } else {
@@ -79,8 +76,18 @@ export default function HouseQuestions() {
     }
   }, []);
 
+  function getQuestions(currentAnswers: (string | null)[]) {
+    const base = [...BASE_QUESTIONS];
+    if (needsStateQuestion(currentAnswers)) {
+      return [...base, STATE_QUESTION];
+    }
+    return base;
+  }
+
+  const questions = getQuestions(answers);
   const q = questions[index];
-  const progress = ((index + 1) / questions.length) * 100;
+  const totalQuestions = needsStateQuestion(answers) ? 3 : 2;
+  const progress = ((index + 1) / totalQuestions) * 100;
 
   function persist(nextAnswers: (string | null)[], nextIndex: number) {
     sessionStorage.setItem(
@@ -97,7 +104,10 @@ export default function HouseQuestions() {
       const nextAnswers = [...answers];
       nextAnswers[index] = option;
 
-      if (index < questions.length - 1) {
+      const nextQuestions = getQuestions(nextAnswers);
+      const isLast = index >= nextQuestions.length - 1;
+
+      if (!isLast) {
         setAnimating(true);
         setDirection("forward");
         setVisible(false);
@@ -139,6 +149,8 @@ export default function HouseQuestions() {
     }, 320);
   }
 
+  const isStateQuestion = q.key === "state";
+
   return (
     <main style={{
       minHeight: "100vh",
@@ -167,7 +179,7 @@ export default function HouseQuestions() {
             ← Back
           </button>
           <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
-            {index + 1} / {questions.length}
+            {index + 1} / {totalQuestions}
           </span>
         </div>
 
@@ -229,53 +241,79 @@ export default function HouseQuestions() {
           </p>
 
           {/* Options */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {q.options.map((option) => {
-              const isSelected = selectedOption === option;
-              const isPrevSelected = answers[index] === option && selectedOption === null;
-              return (
-                <button
-                  key={option}
-                  onClick={() => advance(option)}
-                  disabled={animating}
-                  style={{
-                    width: "100%", textAlign: "left",
-                    padding: "14px 18px", borderRadius: 14,
-                    border: isSelected ? "2px solid #6366f1" : isPrevSelected ? "2px solid #c7d2fe" : "2px solid #f1f5f9",
-                    background: isSelected
-                      ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                      : isPrevSelected ? "#eef2ff" : "#f8fafc",
-                    color: isSelected ? "#ffffff" : isPrevSelected ? "#4338ca" : "#334155",
-                    fontSize: 15, fontWeight: isSelected ? 500 : 400,
-                    cursor: animating ? "default" : "pointer",
-                    fontFamily: "inherit",
-                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-                    transform: isSelected ? "scale(0.99)" : "scale(1)",
-                    transition: "all 0.15s ease",
-                    boxShadow: isSelected ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
-                  }}
-                >
-                  <span>{option}</span>
-                  {isSelected && (
-                    <span style={{
-                      width: 22, height: 22, borderRadius: "50%",
-                      background: "rgba(255,255,255,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 13, flexShrink: 0,
-                    }}>✓</span>
-                  )}
-                  {isPrevSelected && !isSelected && (
-                    <span style={{
-                      width: 22, height: 22, borderRadius: "50%",
-                      background: "#c7d2fe",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 12, color: "#4338ca", flexShrink: 0,
-                    }}>✓</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          {isStateQuestion ? (
+            /* State grid */
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {q.options.map((option) => {
+                const isSelected = selectedOption === option || answers[index] === option;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => advance(option)}
+                    disabled={animating}
+                    style={{
+                      padding: "12px 8px", borderRadius: 12,
+                      border: isSelected ? "2px solid #6366f1" : "2px solid #f1f5f9",
+                      background: isSelected
+                        ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                        : "#f8fafc",
+                      color: isSelected ? "#fff" : "#334155",
+                      fontSize: 14, fontWeight: isSelected ? 600 : 500,
+                      cursor: animating ? "default" : "pointer",
+                      fontFamily: "inherit",
+                      transition: "all 0.15s ease",
+                      boxShadow: isSelected ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
+                    }}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Regular options */
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {q.options.map((option) => {
+                const isSelected = selectedOption === option;
+                const isPrevSelected = answers[index] === option && selectedOption === null;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => advance(option)}
+                    disabled={animating}
+                    style={{
+                      width: "100%", textAlign: "left",
+                      padding: "14px 18px", borderRadius: 14,
+                      border: isSelected ? "2px solid #6366f1" : isPrevSelected ? "2px solid #c7d2fe" : "2px solid #f1f5f9",
+                      background: isSelected
+                        ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                        : isPrevSelected ? "#eef2ff" : "#f8fafc",
+                      color: isSelected ? "#ffffff" : isPrevSelected ? "#4338ca" : "#334155",
+                      fontSize: 15, fontWeight: isSelected ? 500 : 400,
+                      cursor: animating ? "default" : "pointer",
+                      fontFamily: "inherit",
+                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                      transform: isSelected ? "scale(0.99)" : "scale(1)",
+                      transition: "all 0.15s ease",
+                      boxShadow: isSelected ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
+                    }}
+                  >
+                    <span>{option}</span>
+                    {(isSelected || isPrevSelected) && (
+                      <span style={{
+                        width: 22, height: 22, borderRadius: "50%",
+                        background: isSelected ? "rgba(255,255,255,0.3)" : "#c7d2fe",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: isSelected ? 13 : 12,
+                        color: isSelected ? "#fff" : "#4338ca",
+                        flexShrink: 0,
+                      }}>✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>
