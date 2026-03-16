@@ -12,6 +12,16 @@ const meshBg = `
 
 const STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
 
+const INCOME_TYPES = [
+  { value: "rental", label: "Rental income", shade: 0.8 },
+  { value: "dividends", label: "Dividends", shade: 0.8 },
+  { value: "government", label: "Government payments", shade: 1.0 },
+  { value: "child_support", label: "Child support received", shade: 1.0 },
+  { value: "other", label: "Other", shade: 0.8 },
+];
+
+type OtherIncome = { type: string; amount: string };
+
 type Results = {
   borrowingCapacity: number;
   monthlyRepayment: number;
@@ -25,14 +35,15 @@ type Results = {
   fhogEligible: boolean;
   fhogAmount: number;
   depositGap: number;
-  monthsToSave: number;
   netMonthlyIncome: number;
   totalMonthlyCommitments: number;
   surplusIncome: number;
   dsr: number;
   loanAmount: number;
+  contractRate: number;
 };
 
+// ATO 2024-25 tax brackets
 function calcAnnualTax(gross: number): number {
   if (gross <= 18200) return 0;
   if (gross <= 45000) return (gross - 18200) * 0.19;
@@ -41,6 +52,7 @@ function calcAnnualTax(gross: number): number {
   return 51667 + (gross - 180000) * 0.45;
 }
 
+// HEM benchmarks — income-scaled
 function calcHEM(grossIncome: number, hasPartner: boolean, dependants: number): number {
   let base: number;
   if (!hasPartner) {
@@ -51,11 +63,33 @@ function calcHEM(grossIncome: number, hasPartner: boolean, dependants: number): 
   return base + dependants * 650;
 }
 
+const FHOG: Record<string, { amount: number; threshold: number }> = {
+  VIC: { amount: 10000, threshold: 750000 },
+  NSW: { amount: 10000, threshold: 600000 },
+  QLD: { amount: 15000, threshold: 750000 },
+  SA:  { amount: 15000, threshold: 650000 },
+  WA:  { amount: 10000, threshold: 750000 },
+  TAS: { amount: 10000, threshold: 750000 },
+  ACT: { amount: 0,     threshold: 0 },
+  NT:  { amount: 10000, threshold: 750000 },
+};
+
 const defaultForm = {
-  income1: "", income2: "", dependants: "0",
-  carLoan: "", creditCards: "", otherLiabilities: "",
-  deposit: "", purchasePrice: "", monthlySavings: "",
-  firstHome: "yes", state: "VIC",
+  purpose: "owner" as "owner" | "investment",
+  income1: "",
+  income2: "",
+  dependants: "0",
+  otherIncomes: [] as OtherIncome[],
+  carLoan: "",
+  creditCards: "",
+  otherLiabilities: "",
+  additionalExpenses: "",
+  continuingRent: "no" as "yes" | "no",
+  continuingRentAmount: "",
+  deposit: "",
+  purchasePrice: "",
+  firstHome: "yes",
+  state: "VIC",
 };
 
 function calculateResults(form: typeof defaultForm): Results {
@@ -63,66 +97,96 @@ function calculateResults(form: typeof defaultForm): Results {
   const income2 = parseFloat(form.income2) || 0;
   const grossIncome = income1 + income2;
   const hasPartner = income2 > 0;
+
+  // Net income after tax + Medicare
   const tax1 = calcAnnualTax(income1) + income1 * 0.02;
   const tax2 = calcAnnualTax(income2) + income2 * 0.02;
-  const netMonthlyIncome = (grossIncome - tax1 - tax2) / 12;
+  let netAnnual = grossIncome - tax1 - tax2;
+
+  // Add shaded other income
+  for (const oi of form.otherIncomes) {
+    const amount = parseFloat(oi.amount) || 0;
+    const shade = INCOME_TYPES.find(t => t.value === oi.type)?.shade || 0.8;
+    netAnnual += amount * shade;
+  }
+  const netMonthlyIncome = netAnnual / 12;
+
   const dependants = parseInt(form.dependants) || 0;
+
+  // Liabilities
   const carLoan = parseFloat(form.carLoan) || 0;
   const creditCardLimit = parseFloat(form.creditCards) || 0;
   const creditCardMonthly = (creditCardLimit * 0.038) / 12;
   const otherLiabilities = parseFloat(form.otherLiabilities) || 0;
+  const additionalExpenses = parseFloat(form.additionalExpenses) || 0;
+  const continuingRent = form.continuingRent === "yes"
+    ? parseFloat(form.continuingRentAmount) || 0
+    : 0;
+
+  // HEM + property expenses for investment
   const hem = calcHEM(grossIncome, hasPartner, dependants);
-  const debtRepayments = carLoan + creditCardMonthly + otherLiabilities;
-  const totalMonthlyCommitments = debtRepayments + hem;
-  const contractRate = 0.0625;
+  const propertyExpenses = form.purpose === "investment" ? 200 : 0;
+
+  const totalMonthlyCommitments =
+    carLoan + creditCardMonthly + otherLiabilities +
+    additionalExpenses + continuingRent +
+    hem + propertyExpenses;
+
+  // Rates — investment is higher
+  const contractRate = form.purpose === "investment" ? 0.0655 : 0.0625;
   const assessmentRate = contractRate + 0.03;
   const months = 30 * 12;
   const monthlyAssessRate = assessmentRate / 12;
+
+  // Borrowing capacity — surplus method
   const surplusIncome = netMonthlyIncome - totalMonthlyCommitments;
   const maxMonthlyRepayment = Math.max(0, surplusIncome);
+
   const borrowingCapacity = maxMonthlyRepayment > 0
     ? Math.round((maxMonthlyRepayment * (Math.pow(1 + monthlyAssessRate, months) - 1)) /
         (monthlyAssessRate * Math.pow(1 + monthlyAssessRate, months)))
     : 0;
+
   const purchasePrice = parseFloat(form.purchasePrice) || borrowingCapacity * 1.1;
   const deposit = parseFloat(form.deposit) || 0;
   const loanAmount = Math.max(0, purchasePrice - deposit);
+
+  // Max LVR — investment typically 80%
+  const maxLvr = form.purpose === "investment" ? 80 : 95;
   const lvr = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
+
   const monthlyRate = contractRate / 12;
   const monthlyRepayment = loanAmount > 0
     ? Math.round((loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
         (Math.pow(1 + monthlyRate, months) - 1))
     : 0;
+
   const totalRepayable = monthlyRepayment * months;
   const totalInterest = totalRepayable - loanAmount;
-  const lmiApplies = lvr > 80;
+
+  // LMI threshold differs by purpose
+  const lmiThreshold = form.purpose === "investment" ? 80 : 80;
+  const lmiApplies = lvr > lmiThreshold;
   const lmiEstimate = lmiApplies ? Math.round(loanAmount * 0.02) : 0;
-  const isFirstHome = form.firstHome === "yes";
-  const price = purchasePrice;
-  let fhogEligible = false;
-  let fhogAmount = 0;
-  if (isFirstHome) {
-    if (form.state === "VIC" && price <= 750000) { fhogEligible = true; fhogAmount = 10000; }
-    else if (form.state === "NSW" && price <= 600000) { fhogEligible = true; fhogAmount = 10000; }
-    else if (form.state === "QLD" && price <= 750000) { fhogEligible = true; fhogAmount = 15000; }
-    else if (form.state === "SA" && price <= 650000) { fhogEligible = true; fhogAmount = 15000; }
-    else if (form.state === "WA" && price <= 750000) { fhogEligible = true; fhogAmount = 10000; }
-    else if (form.state === "TAS" && price <= 750000) { fhogEligible = true; fhogAmount = 10000; }
-    else if (form.state === "ACT") { fhogEligible = false; fhogAmount = 0; }
-    else if (form.state === "NT" && price <= 750000) { fhogEligible = true; fhogAmount = 10000; }
-  }
-  const minDeposit = purchasePrice * 0.05;
+
+  // FHOG — owner occupier only
+  const isFirstHome = form.firstHome === "yes" && form.purpose === "owner";
+  const fhogData = FHOG[form.state];
+  const fhogEligible = isFirstHome && fhogData && fhogData.amount > 0 && purchasePrice <= fhogData.threshold;
+  const fhogAmount = fhogEligible ? fhogData.amount : 0;
+
+  const minDeposit = purchasePrice * (form.purpose === "investment" ? 0.2 : 0.05);
   const depositGap = Math.max(0, minDeposit - deposit);
-  const monthlySavings = parseFloat(form.monthlySavings) || 1000;
-  const monthsToSave = depositGap > 0 ? Math.ceil(depositGap / monthlySavings) : 0;
   const dsr = grossIncome > 0 ? ((monthlyRepayment * 12) / grossIncome) * 100 : 0;
+
   return {
     borrowingCapacity, monthlyRepayment,
     fortnightlyRepayment: Math.round(monthlyRepayment * 12 / 26),
     weeklyRepayment: Math.round(monthlyRepayment * 12 / 52),
     totalRepayable, totalInterest, lvr, lmiApplies, lmiEstimate,
-    fhogEligible, fhogAmount, depositGap, monthsToSave,
-    netMonthlyIncome, totalMonthlyCommitments, surplusIncome, dsr, loanAmount,
+    fhogEligible, fhogAmount, depositGap,
+    netMonthlyIncome, totalMonthlyCommitments, surplusIncome,
+    dsr, loanAmount, contractRate,
   };
 }
 
@@ -130,7 +194,7 @@ function fmt(n: number) {
   return "$" + Math.round(n).toLocaleString("en-AU");
 }
 
-function card(children: React.ReactNode, mb = "1rem") {
+function Card({ children, mb = "1rem" }: { children: React.ReactNode; mb?: string }) {
   return (
     <div style={{
       background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
@@ -147,10 +211,9 @@ function SectionLabel({ emoji, label }: { emoji: string; label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1rem" }}>
       <div style={{
-        width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
         background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 16,
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17,
       }}>{emoji}</div>
       <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
         {label}
@@ -159,20 +222,18 @@ function SectionLabel({ emoji, label }: { emoji: string; label: string }) {
   );
 }
 
-function InputField({ label, note, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; note?: string }) {
+function Input({ label, hint, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   return (
     <div>
-      <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{label}</label>
-      {note && <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 4px" }}>{note}</p>}
-      <input
-        {...props}
-        style={{
-          width: "100%", padding: "10px 12px", borderRadius: 10,
-          border: "1.5px solid #e2e8f0", fontSize: 14,
-          fontFamily: "inherit", background: "#f8fafc",
-          outline: "none", boxSizing: "border-box",
-          transition: "border-color 0.15s ease",
-        }}
+      <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: hint ? 2 : 4 }}>{label}</label>
+      {hint && <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 4px", fontStyle: "italic" }}>{hint}</p>}
+      <input {...props} style={{
+        width: "100%", padding: "10px 12px", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", fontSize: 13,
+        fontFamily: "inherit", background: "#f8fafc", color: "#1e293b",
+        outline: "none", boxSizing: "border-box" as const,
+        transition: "border-color 0.15s ease",
+      }}
         onFocus={e => e.target.style.borderColor = "#a5b4fc"}
         onBlur={e => e.target.style.borderColor = "#e2e8f0"}
       />
@@ -180,42 +241,24 @@ function InputField({ label, note, ...props }: React.InputHTMLAttributes<HTMLInp
   );
 }
 
-function SelectField({ label, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
+function Select({ label, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
   return (
     <div>
       <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{label}</label>
-      <select
-        {...props}
-        style={{
-          width: "100%", padding: "10px 12px", borderRadius: 10,
-          border: "1.5px solid #e2e8f0", fontSize: 14,
-          fontFamily: "inherit", background: "#f8fafc",
-          outline: "none", boxSizing: "border-box",
-        }}
-      >
+      <select {...props} style={{
+        width: "100%", padding: "10px 12px", borderRadius: 10,
+        border: "1.5px solid #e2e8f0", fontSize: 13,
+        fontFamily: "inherit", background: "#f8fafc", color: "#1e293b", outline: "none",
+        boxSizing: "border-box" as const,
+      }}>
         {children}
       </select>
     </div>
   );
 }
 
-function MetricCard({ emoji, label, value, sub, accent }: { emoji: string; label: string; value: string; sub?: string; accent?: string }) {
-  return (
-    <div style={{
-      background: "rgba(255,255,255,0.9)", borderRadius: 16,
-      padding: "1rem", textAlign: "center",
-      border: "1px solid rgba(99,102,241,0.1)",
-    }}>
-      <div style={{ fontSize: 20, marginBottom: 4 }}>{emoji}</div>
-      <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
-      <p style={{ fontSize: 18, fontWeight: 700, color: accent || "#1e293b", margin: 0 }}>{value}</p>
-      {sub && <p style={{ fontSize: 11, color: "#94a3b8", margin: "2px 0 0" }}>{sub}</p>}
-    </div>
-  );
-}
-
 function Bar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  const pct = Math.min((value / max) * 100, 100);
+  const pct = Math.min((value / Math.max(max, 1)) * 100, 100);
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
@@ -223,10 +266,7 @@ function Bar({ label, value, max, color }: { label: string; value: number; max: 
         <span style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{fmt(value)}</span>
       </div>
       <div style={{ height: 6, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
-        <div style={{
-          height: "100%", width: `${pct}%`, borderRadius: 99,
-          background: color, transition: "width 0.6s ease",
-        }} />
+        <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: color, transition: "width 0.6s ease" }} />
       </div>
     </div>
   );
@@ -236,8 +276,24 @@ export default function ServiceabilityCalculator() {
   const [form, setForm] = useState(defaultForm);
   const [results, setResults] = useState<Results | null>(null);
 
-  function set(key: keyof typeof defaultForm, value: string) {
+  function set<K extends keyof typeof defaultForm>(key: K, value: typeof defaultForm[K]) {
     setForm(f => ({ ...f, [key]: value }));
+  }
+
+  function addOtherIncome() {
+    setForm(f => ({ ...f, otherIncomes: [...f.otherIncomes, { type: "rental", amount: "" }] }));
+  }
+
+  function updateOtherIncome(i: number, field: keyof OtherIncome, value: string) {
+    setForm(f => {
+      const next = [...f.otherIncomes];
+      next[i] = { ...next[i], [field]: value };
+      return { ...f, otherIncomes: next };
+    });
+  }
+
+  function removeOtherIncome(i: number) {
+    setForm(f => ({ ...f, otherIncomes: f.otherIncomes.filter((_, idx) => idx !== i) }));
   }
 
   function calculate() {
@@ -245,21 +301,16 @@ export default function ServiceabilityCalculator() {
     setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 100);
   }
 
+  const isInvestment = form.purpose === "investment";
+
   return (
-    <main style={{
-      minHeight: "100vh", background: meshBg,
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      padding: "0 1rem",
-    }}>
+    <main style={{ minHeight: "100vh", background: meshBg, fontFamily: "'DM Sans', system-ui, sans-serif", padding: "0 1rem" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
       <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: "4rem", paddingBottom: "4rem" }}>
 
         {/* Back */}
-        <a href="/house" style={{
-          fontSize: 13, color: "#64748b", textDecoration: "none",
-          display: "flex", alignItems: "center", gap: 6, marginBottom: "2rem",
-        }}>
+        <a href="/house" style={{ fontSize: 13, color: "#64748b", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, marginBottom: "2rem" }}>
           ← Back
         </a>
 
@@ -282,79 +333,179 @@ export default function ServiceabilityCalculator() {
             What can you borrow?
           </h1>
           <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>
-            Understand your position before speaking to a broker. Based on real bank methodology.
+            Based on real bank methodology. Takes 2 minutes.
           </p>
         </div>
 
-        {/* Income */}
-        {card(
-          <>
-            <SectionLabel emoji="💼" label="Income" />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-              <InputField label="Your gross income (p.a.)" placeholder="e.g. 95000" type="number" value={form.income1} onChange={e => set("income1", e.target.value)} />
-              <InputField label="Partner income (p.a.)" placeholder="Optional" type="number" value={form.income2} onChange={e => set("income2", e.target.value)} />
-            </div>
-            <SelectField label="Dependants" value={form.dependants} onChange={e => set("dependants", e.target.value)}>
-              {["0","1","2","3","4","5+"].map(n => <option key={n}>{n}</option>)}
-            </SelectField>
-          </>
-        )}
-
-        {/* Liabilities */}
-        {card(
-          <>
-            <SectionLabel emoji="💳" label="Monthly liabilities" />
-            <p style={{ fontSize: 12, color: "#94a3b8", fontStyle: "italic", marginBottom: "1rem", marginTop: "-0.5rem" }}>
-              ✦ Living expenses are auto-estimated using the bank HEM benchmark — only enter actual loan repayments.
+        {/* Purpose */}
+        <Card>
+          <SectionLabel emoji="🏠" label="Purpose of purchase" />
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            {[
+              { value: "owner", label: "🏡 Home to live in" },
+              { value: "investment", label: "📈 Investment property" },
+            ].map(opt => (
+              <button key={opt.value} onClick={() => set("purpose", opt.value as "owner" | "investment")}
+                style={{
+                  flex: 1, padding: "10px", borderRadius: 12,
+                  background: form.purpose === opt.value ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+                  border: form.purpose === opt.value ? "none" : "1.5px solid #e2e8f0",
+                  color: form.purpose === opt.value ? "#fff" : "#64748b",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  boxShadow: form.purpose === opt.value ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
+                  transition: "all 0.15s ease",
+                }}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ background: "#f8fafc", borderRadius: 10, padding: "8px 12px", border: "1px solid #f1f5f9" }}>
+            <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.6 }}>
+              {isInvestment
+                ? "💡 Investment loans typically have higher interest rates (≈0.3% above owner-occupier) and require a 20% deposit. Rental income is counted at 80%."
+                : "💡 Owner-occupier loans have lower rates and you can borrow with as little as a 5% deposit (LMI applies under 20%)."}
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-              <InputField label="Car loan repayment/month" placeholder="e.g. 650" type="number" value={form.carLoan} onChange={e => set("carLoan", e.target.value)} />
-              <InputField label="Credit card limits (total)" placeholder="e.g. 10000" type="number" value={form.creditCards} onChange={e => set("creditCards", e.target.value)} />
-            </div>
-            <InputField label="Other loan repayments/month (not rent)" placeholder="e.g. 300" type="number" value={form.otherLiabilities} onChange={e => set("otherLiabilities", e.target.value)} />
-          </>
-        )}
+          </div>
+        </Card>
 
-        {/* Property */}
-        {card(
-          <>
-            <SectionLabel emoji="🏡" label="Property & deposit" />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-              <InputField label="Target purchase price" placeholder="e.g. 750000" type="number" value={form.purchasePrice} onChange={e => set("purchasePrice", e.target.value)} />
-              <InputField label="Deposit saved" placeholder="e.g. 95000" type="number" value={form.deposit} onChange={e => set("deposit", e.target.value)} />
-            </div>
-            <InputField label="Monthly savings capacity" placeholder="e.g. 2000" type="number" value={form.monthlySavings} onChange={e => set("monthlySavings", e.target.value)} />
-          </>
-        )}
+        {/* Income */}
+        <Card>
+          <SectionLabel emoji="💼" label="Income" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <Input label="Your gross income (p.a.)" hint="Before tax" type="number" placeholder="e.g. 95000" value={form.income1} onChange={e => set("income1", e.target.value)} />
+            <Input label="Partner gross income (p.a.)" hint="Before tax · optional" type="number" placeholder="optional" value={form.income2} onChange={e => set("income2", e.target.value)} />
+          </div>
+          <Select label="Dependants" value={form.dependants} onChange={e => set("dependants", e.target.value)}>
+            {["0","1","2","3","4","5+"].map(n => <option key={n}>{n}</option>)}
+          </Select>
 
-        {/* FHOG */}
-        {card(
-          <>
+          {/* Other income */}
+          <div style={{ marginTop: "1rem", background: "#f8fafc", borderRadius: 12, padding: "1rem", border: "1px solid #f1f5f9" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 4px" }}>Other income sources</p>
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 10px", fontStyle: "italic" }}>
+              Banks shade rental income and dividends at 80%. Government payments and child support count at 100%.
+            </p>
+            {form.otherIncomes.map((oi, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, marginBottom: 8, alignItems: "end" }}>
+                <Select label="Type" value={oi.type} onChange={e => updateOtherIncome(i, "type", e.target.value)}>
+                  {INCOME_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </Select>
+                <Input label="Annual amount" type="number" placeholder="e.g. 20000" value={oi.amount} onChange={e => updateOtherIncome(i, "amount", e.target.value)} />
+                <button onClick={() => removeOtherIncome(i)} style={{
+                  padding: "10px", borderRadius: 10, border: "1.5px solid #fecaca",
+                  background: "#fef2f2", color: "#ef4444", fontSize: 13,
+                  cursor: "pointer", fontFamily: "inherit", marginBottom: 0,
+                }}>✕</button>
+              </div>
+            ))}
+            <button onClick={addOtherIncome} style={{
+              display: "flex", alignItems: "center", gap: 6,
+              fontSize: 12, color: "#6366f1", background: "none", border: "none",
+              cursor: "pointer", fontFamily: "inherit", padding: 0, marginTop: form.otherIncomes.length ? 4 : 0,
+            }}>
+              + Add other income source
+            </button>
+          </div>
+        </Card>
+
+        {/* Liabilities & expenses */}
+        <Card>
+          <SectionLabel emoji="💳" label="Liabilities & expenses" />
+          <div style={{ background: "#f8fafc", borderRadius: 10, padding: "8px 12px", border: "1px solid #f1f5f9", marginBottom: "1rem" }}>
+            <p style={{ fontSize: 11, color: "#94a3b8", margin: 0, fontStyle: "italic" }}>
+              ✦ Everyday living expenses (groceries, utilities, transport) are estimated using the bank HEM benchmark — only enter debts and expenses above this.
+            </p>
+          </div>
+
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 10px" }}>Existing debts</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <Input label="Car loan (monthly repayment)" type="number" placeholder="e.g. 650" value={form.carLoan} onChange={e => set("carLoan", e.target.value)} />
+            <Input label="Credit card limits (total)" type="number" placeholder="e.g. 10000" value={form.creditCards} onChange={e => set("creditCards", e.target.value)} />
+          </div>
+          <Input label="Other loan repayments/month" hint="Personal loans, HECS, BNPL etc — not rent" type="number" placeholder="e.g. 300" value={form.otherLiabilities} onChange={e => set("otherLiabilities", e.target.value)} />
+
+          <div style={{ borderTop: "1px solid #f1f5f9", margin: "1rem 0" }} />
+
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 4px" }}>Additional monthly expenses</p>
+          <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 10px", fontStyle: "italic" }}>
+            Only enter costs above typical living expenses — e.g. private school fees, regular medical costs.
+          </p>
+          <Input label="Additional expenses/month" type="number" placeholder="e.g. 800" value={form.additionalExpenses} onChange={e => set("additionalExpenses", e.target.value)} />
+
+          <div style={{ borderTop: "1px solid #f1f5f9", margin: "1rem 0" }} />
+
+          {/* Rent continuation */}
+          <div style={{ background: "#fffbeb", borderRadius: 12, padding: "1rem", border: "1px solid #fde68a" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#92400e", margin: "0 0 8px" }}>
+              Will you continue paying rent after taking out this loan?
+            </p>
+            <p style={{ fontSize: 11, color: "#b45309", margin: "0 0 10px", fontStyle: "italic" }}>
+              Relevant if you're buying an investment property while renting your own home.
+            </p>
+            <div style={{ display: "flex", gap: 8, marginBottom: form.continuingRent === "yes" ? 10 : 0 }}>
+              {[
+                { value: "no", label: "No — moving into this property" },
+                { value: "yes", label: "Yes — I'll still be renting" },
+              ].map(opt => (
+                <button key={opt.value} onClick={() => set("continuingRent", opt.value as "yes" | "no")}
+                  style={{
+                    flex: 1, padding: "8px", borderRadius: 10, fontSize: 12, fontWeight: 500,
+                    background: form.continuingRent === opt.value ? "#f59e0b" : "#fff",
+                    border: form.continuingRent === opt.value ? "none" : "1.5px solid #fde68a",
+                    color: form.continuingRent === opt.value ? "#fff" : "#92400e",
+                    cursor: "pointer", fontFamily: "inherit",
+                    transition: "all 0.15s ease",
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {form.continuingRent === "yes" && (
+              <Input label="Monthly rent amount" type="number" placeholder="e.g. 2400" value={form.continuingRentAmount} onChange={e => set("continuingRentAmount", e.target.value)} />
+            )}
+          </div>
+        </Card>
+
+        {/* Property & deposit */}
+        <Card>
+          <SectionLabel emoji="🏡" label="Property & deposit" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Input label="Target purchase price" type="number" placeholder="e.g. 750000" value={form.purchasePrice} onChange={e => set("purchasePrice", e.target.value)} />
+            <Input label="Deposit saved" type="number" placeholder="e.g. 95000" value={form.deposit} onChange={e => set("deposit", e.target.value)} />
+          </div>
+          {isInvestment && (
+            <div style={{ marginTop: 10, background: "#fff7ed", borderRadius: 10, padding: "8px 12px", border: "1px solid #fed7aa" }}>
+              <p style={{ fontSize: 11, color: "#ea580c", margin: 0 }}>
+                ⚠ Most lenders require a 20% deposit for investment properties. A smaller deposit may be possible but attracts LMI.
+              </p>
+            </div>
+          )}
+        </Card>
+
+        {/* FHOG — owner only */}
+        {!isInvestment && (
+          <Card>
             <SectionLabel emoji="🎉" label="First home buyer" />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <SelectField label="First home buyer?" value={form.firstHome} onChange={e => set("firstHome", e.target.value)}>
+              <Select label="First home buyer?" value={form.firstHome} onChange={e => set("firstHome", e.target.value)}>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
-              </SelectField>
-              <SelectField label="State" value={form.state} onChange={e => set("state", e.target.value)}>
+              </Select>
+              <Select label="State" value={form.state} onChange={e => set("state", e.target.value)}>
                 {STATES.map(s => <option key={s}>{s}</option>)}
-              </SelectField>
+              </Select>
             </div>
-          </>
-        , "1.5rem")}
+          </Card>
+        )}
 
         {/* CTA */}
-        <button
-          onClick={calculate}
-          style={{
-            width: "100%", padding: "15px", borderRadius: 16,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            border: "none", color: "#fff", fontSize: 16, fontWeight: 600,
-            cursor: "pointer", fontFamily: "inherit",
-            boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
-            marginBottom: "0.75rem",
-          }}
-        >
+        <button onClick={calculate} style={{
+          width: "100%", padding: "15px", borderRadius: 16, marginBottom: "0.75rem",
+          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          border: "none", color: "#fff", fontSize: 16, fontWeight: 600,
+          cursor: "pointer", fontFamily: "inherit",
+          boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
+        }}>
           Calculate my position 🧮
         </button>
 
@@ -382,92 +533,96 @@ export default function ServiceabilityCalculator() {
                 {fmt(results.borrowingCapacity)}
               </p>
               <p style={{ fontSize: 13, color: "#6d28d9", margin: 0 }}>
-                Based on a 9.25% assessment rate (APRA buffer included)
+                Assessment rate: {((results.contractRate + 0.03) * 100).toFixed(2)}% (APRA 3% buffer included)
+                {isInvestment && " · Investment property rate"}
               </p>
             </div>
 
             {/* Income breakdown */}
-            {card(
-              <>
-                <SectionLabel emoji="📊" label="Income breakdown" />
-                <Bar label="Net monthly income" value={results.netMonthlyIncome} max={results.netMonthlyIncome} color="linear-gradient(90deg, #6366f1, #8b5cf6)" />
-                <Bar label="Monthly commitments" value={results.totalMonthlyCommitments} max={results.netMonthlyIncome} color="#f87171" />
-                <Bar label="Available surplus" value={Math.max(0, results.surplusIncome)} max={results.netMonthlyIncome} color="#34d399" />
-              </>
-            )}
+            <Card>
+              <SectionLabel emoji="📊" label="Income breakdown" />
+              <Bar label="Net monthly income" value={results.netMonthlyIncome} max={results.netMonthlyIncome} color="linear-gradient(90deg, #6366f1, #8b5cf6)" />
+              <Bar label="Monthly commitments" value={results.totalMonthlyCommitments} max={results.netMonthlyIncome} color="#f87171" />
+              <Bar label="Available surplus" value={Math.max(0, results.surplusIncome)} max={results.netMonthlyIncome} color="#34d399" />
+            </Card>
 
             {/* Repayments */}
-            {card(
-              <>
-                <SectionLabel emoji="📅" label="Repayment breakdown" />
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: "1rem" }}>
-                  <MetricCard emoji="📆" label="Monthly" value={fmt(results.monthlyRepayment)} />
-                  <MetricCard emoji="🗓️" label="Fortnightly" value={fmt(results.fortnightlyRepayment)} />
-                  <MetricCard emoji="📅" label="Weekly" value={fmt(results.weeklyRepayment)} />
-                </div>
-                <div style={{ background: "#f8fafc", borderRadius: 12, padding: "1rem", border: "1px solid #f1f5f9" }}>
-                  {[
-                    { label: "Total repayable (30 yrs)", value: fmt(results.totalRepayable), color: "#1e293b" },
-                    { label: "Total interest", value: fmt(results.totalInterest), color: "#ef4444" },
-                    { label: "Debt service ratio", value: `${results.dsr.toFixed(1)}% — ${results.dsr > 35 ? "⚠️ high" : "✅ healthy"}`, color: results.dsr > 35 ? "#ef4444" : "#059669" },
-                  ].map(row => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f1f5f9" }}>
-                      <span style={{ fontSize: 13, color: "#64748b" }}>{row.label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: row.color }}>{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+            <Card>
+              <SectionLabel emoji="📅" label="Repayment breakdown" />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: "1rem" }}>
+                {[
+                  { label: "Monthly", val: fmt(results.monthlyRepayment) },
+                  { label: "Fortnightly", val: fmt(results.fortnightlyRepayment) },
+                  { label: "Weekly", val: fmt(results.weeklyRepayment) },
+                ].map(m => (
+                  <div key={m.label} style={{ background: "#f8fafc", borderRadius: 14, padding: "12px", textAlign: "center", border: "1px solid #f1f5f9" }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: "#1e293b", margin: "0 0 3px" }}>{m.val}</p>
+                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{m.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "#f8fafc", borderRadius: 12, padding: "1rem", border: "1px solid #f1f5f9" }}>
+                {[
+                  { label: "Total repayable (30 yrs)", value: fmt(results.totalRepayable), color: "#1e293b" },
+                  { label: "Total interest", value: fmt(results.totalInterest), color: "#ef4444" },
+                  { label: "Debt service ratio", value: `${results.dsr.toFixed(1)}% — ${results.dsr > 35 ? "⚠️ high" : "✅ healthy"}`, color: results.dsr > 35 ? "#ef4444" : "#059669" },
+                ].map(row => (
+                  <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f1f5f9" }}>
+                    <span style={{ fontSize: 13, color: "#64748b" }}>{row.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: row.color }}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
 
             {/* LVR */}
-            {card(
-              <>
-                <SectionLabel emoji="🏦" label="LVR & LMI" />
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                  <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", fontWeight: 400, color: "#1e293b", margin: 0 }}>
-                    {results.lvr.toFixed(1)}%
+            <Card>
+              <SectionLabel emoji="🏦" label="LVR & LMI" />
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", fontWeight: 400, color: "#1e293b", margin: 0 }}>
+                  {results.lvr.toFixed(1)}%
+                </p>
+                <span style={{
+                  fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99,
+                  background: results.lmiApplies ? "#fef2f2" : "#f0fdf4",
+                  color: results.lmiApplies ? "#ef4444" : "#16a34a",
+                  border: `1px solid ${results.lmiApplies ? "#fecaca" : "#bbf7d0"}`,
+                }}>
+                  {results.lmiApplies ? "⚠️ LMI applies" : "✅ No LMI required"}
+                </span>
+              </div>
+              <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
+                <div style={{
+                  height: "100%", borderRadius: 99,
+                  width: `${Math.min(results.lvr, 100)}%`,
+                  background: results.lvr > 90 ? "linear-gradient(90deg, #f87171, #ef4444)" : results.lvr > 80 ? "linear-gradient(90deg, #fbbf24, #f59e0b)" : "linear-gradient(90deg, #34d399, #10b981)",
+                  transition: "width 0.6s ease",
+                }} />
+              </div>
+              {results.lmiApplies ? (
+                <div style={{ background: "#fef2f2", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #fecaca" }}>
+                  <p style={{ fontSize: 13, color: "#ef4444", margin: 0 }}>
+                    Estimated LMI cost: <strong>{fmt(results.lmiEstimate)}</strong>
+                    {isInvestment ? " — a 20% deposit removes this cost entirely." : " — a deposit above 20% removes this cost entirely."}
                   </p>
-                  <span style={{
-                    fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99,
-                    background: results.lmiApplies ? "#fef2f2" : "#f0fdf4",
-                    color: results.lmiApplies ? "#ef4444" : "#16a34a",
-                    border: `1px solid ${results.lmiApplies ? "#fecaca" : "#bbf7d0"}`,
-                  }}>
-                    {results.lmiApplies ? "⚠️ LMI applies" : "✅ No LMI required"}
-                  </span>
                 </div>
-                <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
-                  <div style={{
-                    height: "100%", borderRadius: 99,
-                    width: `${Math.min(results.lvr, 100)}%`,
-                    background: results.lvr > 90
-                      ? "linear-gradient(90deg, #f87171, #ef4444)"
-                      : results.lvr > 80
-                      ? "linear-gradient(90deg, #fbbf24, #f59e0b)"
-                      : "linear-gradient(90deg, #34d399, #10b981)",
-                    transition: "width 0.6s ease",
-                  }} />
+              ) : (
+                <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #bbf7d0" }}>
+                  <p style={{ fontSize: 13, color: "#16a34a", margin: 0 }}>Your deposit is above 20% — no LMI required 🎉</p>
                 </div>
-                {results.lmiApplies ? (
-                  <div style={{ background: "#fef2f2", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #fecaca" }}>
-                    <p style={{ fontSize: 13, color: "#ef4444", margin: 0 }}>
-                      Estimated LMI cost: <strong>{fmt(results.lmiEstimate)}</strong> — a 20%+ deposit removes this entirely.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #bbf7d0" }}>
-                    <p style={{ fontSize: 13, color: "#16a34a", margin: 0 }}>
-                      Your deposit is above 20% — no LMI required 🎉
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
+              )}
+              {results.depositGap > 0 && (
+                <div style={{ background: "#fffbeb", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #fde68a", marginTop: 10 }}>
+                  <p style={{ fontSize: 13, color: "#d97706", margin: 0 }}>
+                    ⏳ You need <strong>{fmt(results.depositGap)}</strong> more for a {isInvestment ? "20%" : "5%"} deposit minimum.
+                  </p>
+                </div>
+              )}
+            </Card>
 
             {/* FHOG */}
-            {card(
-              <>
+            {!isInvestment && (
+              <Card>
                 <SectionLabel emoji="🎁" label="First home owner grant" />
                 {results.fhogEligible ? (
                   <div>
@@ -475,15 +630,12 @@ export default function ServiceabilityCalculator() {
                       <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", fontWeight: 400, color: "#16a34a", margin: 0 }}>
                         {fmt(results.fhogAmount)}
                       </p>
-                      <span style={{
-                        fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99,
-                        background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
-                      }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
                         ✅ Likely eligible
                       </span>
                     </div>
                     <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-                      Based on your state ({form.state}) and purchase price. Confirm with your broker or state revenue office.
+                      Based on your state ({form.state}) and purchase price. Confirm eligibility with your broker.
                     </p>
                   </div>
                 ) : (
@@ -495,28 +647,16 @@ export default function ServiceabilityCalculator() {
                     </p>
                   </div>
                 )}
-                {results.depositGap > 0 && (
-                  <div style={{ background: "#fffbeb", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #fde68a", marginTop: 10 }}>
-                    <p style={{ fontSize: 13, color: "#d97706", margin: 0 }}>
-                      ⏳ You need <strong>{fmt(results.depositGap)}</strong> more for a 5% deposit — about <strong>{results.monthsToSave} months</strong> at your savings rate.
-                    </p>
-                  </div>
-                )}
-              </>
+              </Card>
             )}
 
             {/* Disclaimer */}
-            <div style={{
-              background: "rgba(255,255,255,0.6)", borderRadius: 16,
-              padding: "1rem 1.25rem", marginBottom: "1rem",
-              border: "1px solid rgba(255,255,255,0.8)",
-            }}>
+            <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 16, padding: "1rem 1.25rem", marginBottom: "1rem", border: "1px solid rgba(255,255,255,0.8)" }}>
               <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>
-                ✦ This calculator provides estimates only and does not constitute financial advice. Based on 6.25% interest rate, 30-year term, and standard HEM benchmarks. Speak to a licensed mortgage broker for personalised advice.
+                ✦ Estimates only. Not financial advice. Based on {(results.contractRate * 100).toFixed(2)}% interest rate, 30-year term, and standard HEM benchmarks. Speak to a licensed mortgage broker for personalised advice.
               </p>
             </div>
 
-            {/* CTA */}
             <a href="/house/nextstep" style={{
               display: "flex", alignItems: "center", justifyContent: "center",
               padding: "14px", borderRadius: 16,
@@ -535,7 +675,7 @@ export default function ServiceabilityCalculator() {
               color: "#6366f1", fontSize: 14, fontWeight: 500,
               cursor: "pointer", fontFamily: "inherit",
             }}>
-              Start over 🔄
+              Try different numbers 🔄
             </button>
 
           </div>
