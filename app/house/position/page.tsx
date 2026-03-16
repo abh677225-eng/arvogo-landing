@@ -13,20 +13,19 @@ const meshBg = `
 
 type PositionKey = "browsing" | "searching" | "buying";
 
-const FHOG: Record<string, { amount: number; threshold: number }> = {
-  VIC: { amount: 10000, threshold: 750000 },
-  NSW: { amount: 10000, threshold: 600000 },
-  QLD: { amount: 15000, threshold: 750000 },
-  SA:  { amount: 15000, threshold: 650000 },
-  WA:  { amount: 10000, threshold: 750000 },
-  TAS: { amount: 10000, threshold: 750000 },
+const FHOG: Record<string, { amount: number; threshold: number; newOnly?: boolean }> = {
+  VIC: { amount: 10000, threshold: 750000, newOnly: true },
+  NSW: { amount: 10000, threshold: 600000, newOnly: true },
+  QLD: { amount: 15000, threshold: 750000, newOnly: true },
+  SA:  { amount: 15000, threshold: 650000, newOnly: true },
+  WA:  { amount: 10000, threshold: 750000, newOnly: false },
+  TAS: { amount: 10000, threshold: 750000, newOnly: true },
   ACT: { amount: 0,     threshold: 0 },
-  NT:  { amount: 10000, threshold: 750000 },
+  NT:  { amount: 10000, threshold: 750000, newOnly: false },
 };
 
 function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   const progress = answers[0];
-  const budget = answers[1];
   if (progress === "I'm making or about to make offers") return "buying";
   if (progress === "I'm actively looking at properties") return "searching";
   return "browsing";
@@ -42,8 +41,8 @@ const POSITIONS: Record<PositionKey, {
   nextText: string;
   nextCTA: string;
   nextHref: string;
-  secondaryCTA?: string;
-  secondaryHref?: string;
+  secondaryCTA: string;
+  secondaryHref: string;
 }> = {
   browsing: {
     emoji: "👀",
@@ -53,7 +52,7 @@ const POSITIONS: Record<PositionKey, {
     accent: "#2563eb",
     nextTitle: "Start by getting a feel for the market",
     nextText: "The best thing you can do right now is browse listings — not to buy, but to understand what's out there. What areas interest you? What does your budget actually get you? Browsing with curiosity beats researching in the abstract.",
-    nextCTA: "Browse listings",
+    nextCTA: "Browse listings & resources",
     nextHref: "/house/nextstep",
     secondaryCTA: "Check your borrowing capacity",
     secondaryHref: "/serviceability",
@@ -78,7 +77,7 @@ const POSITIONS: Record<PositionKey, {
     gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
     accent: "#059669",
     nextTitle: "Line up your team before you sign anything",
-    nextText: "At this stage you need a mortgage broker, a conveyancer, and a building & pest inspector before you exchange contracts. Getting these sorted now — not after you find a property — means you can move fast when the right one comes up.",
+    nextText: "At this stage you need a mortgage broker, a conveyancer, and a building & pest inspector before you exchange contracts. Getting these sorted now means you can move fast when the right property comes up.",
     nextCTA: "Find the right people",
     nextHref: "/house/nextstep",
     secondaryCTA: "Check your borrowing capacity",
@@ -95,6 +94,7 @@ export default function HousePosition() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("browsing");
   const [state, setState] = useState<string | null>(null);
+  const [isFirstHome, setIsFirstHome] = useState<boolean | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -103,13 +103,14 @@ export default function HousePosition() {
     const answers: (string | null)[] = JSON.parse(raw);
     setPosition(mapAnswersToPosition(answers));
     setState(answers[2] || null);
+    setIsFirstHome(answers[3] === "Yes — first time buying");
     setTimeout(() => setVisible(true), 100);
   }, []);
 
   const copy = POSITIONS[position];
   const fhog = state ? FHOG[state] : null;
+  const showFHOG = isFirstHome && fhog && fhog.amount > 0;
   const showListings = position === "browsing";
-  const showFHOG = state && fhog && fhog.amount > 0;
 
   return (
     <main style={{
@@ -126,7 +127,6 @@ export default function HousePosition() {
         transition: "opacity 0.5s ease, transform 0.5s ease",
       }}>
 
-        {/* Back */}
         <button onClick={() => router.push("/house/questions")} style={{
           background: "none", border: "none", fontSize: 13, color: "#64748b",
           cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem",
@@ -154,6 +154,36 @@ export default function HousePosition() {
           <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.6, margin: 0 }}>{copy.tagline}</p>
         </div>
 
+        {/* FHOG — shown to all first home buyers with state */}
+        {showFHOG && (
+          <div style={{
+            background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+            borderRadius: 20, border: "1px solid rgba(255,255,255,0.6)",
+            padding: "1.25rem 1.5rem", marginBottom: "1rem",
+            boxShadow: "0 4px 24px rgba(16,185,129,0.1)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 20 }}>🎁</span>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+                First home owner grant — {state}
+              </p>
+            </div>
+            <p style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "2rem", fontWeight: 400, color: "#1e293b", margin: "0 0 4px",
+            }}>
+              ${fhog!.amount.toLocaleString("en-AU")}
+            </p>
+            <p style={{ fontSize: 13, color: "#047857", margin: "0 0 6px", lineHeight: 1.6 }}>
+              Available to eligible first home buyers in {state} purchasing
+              {fhog!.newOnly ? " a new home" : " a home"} under ${fhog!.threshold.toLocaleString("en-AU")}.
+            </p>
+            <p style={{ fontSize: 11, color: "#059669", margin: 0, fontStyle: "italic" }}>
+              ✦ Confirm eligibility with your broker or state revenue office.
+            </p>
+          </div>
+        )}
+
         {/* One thing to do next */}
         <div style={{
           background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
@@ -179,7 +209,6 @@ export default function HousePosition() {
           }}>{copy.nextTitle}</h2>
           <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: "0 0 1.25rem" }}>{copy.nextText}</p>
 
-          {/* Primary CTA */}
           <a href={copy.nextHref} style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "13px 20px", borderRadius: 14,
@@ -191,18 +220,15 @@ export default function HousePosition() {
             {copy.nextCTA} →
           </a>
 
-          {/* Secondary CTA */}
-          {copy.secondaryCTA && (
-            <a href={copy.secondaryHref} style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "12px 20px", borderRadius: 14,
-              background: "rgba(255,255,255,0.8)",
-              border: "1.5px solid rgba(99,102,241,0.2)",
-              color: "#6366f1", fontSize: 14, fontWeight: 500, textDecoration: "none",
-            }}>
-              {copy.secondaryCTA}
-            </a>
-          )}
+          <a href={copy.secondaryHref} style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "12px 20px", borderRadius: 14,
+            background: "rgba(255,255,255,0.8)",
+            border: "1.5px solid rgba(99,102,241,0.2)",
+            color: "#6366f1", fontSize: 14, fontWeight: 500, textDecoration: "none",
+          }}>
+            {copy.secondaryCTA}
+          </a>
         </div>
 
         {/* Listing sites — browsing only */}
@@ -247,41 +273,12 @@ export default function HousePosition() {
           </div>
         )}
 
-        {/* FHOG — if state known */}
-        {showFHOG && (
-          <div style={{
-            background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-            borderRadius: 20, border: "1px solid rgba(255,255,255,0.6)",
-            padding: "1.25rem 1.5rem", marginBottom: "1rem",
-            boxShadow: "0 4px 24px rgba(16,185,129,0.1)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 20 }}>🎁</span>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
-                First home owner grant — {state}
-              </p>
-            </div>
-            <p style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "1.75rem", fontWeight: 400, color: "#1e293b",
-              margin: "0 0 4px",
-            }}>
-              ${fhog!.amount.toLocaleString("en-AU")}
-            </p>
-            <p style={{ fontSize: 13, color: "#047857", margin: 0, lineHeight: 1.6 }}>
-              Available to eligible first home buyers in {state} purchasing a new home under ${fhog!.threshold.toLocaleString("en-AU")}. Confirm eligibility with your broker.
-            </p>
-          </div>
-        )}
-
-        {/* Path link */}
         <button onClick={() => router.push("/house/path")} style={{
           width: "100%", padding: "12px", borderRadius: 14,
           background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)",
           border: "1px solid rgba(255,255,255,0.8)",
           color: "#64748b", fontSize: 13, fontWeight: 500,
-          cursor: "pointer", fontFamily: "inherit",
-          marginBottom: "1rem",
+          cursor: "pointer", fontFamily: "inherit", marginBottom: "1rem",
         }}>
           See the full path to buying a home →
         </button>

@@ -10,12 +10,13 @@ type StoredState = {
 
 const STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
 
-const BASE_QUESTIONS = [
+const QUESTIONS = [
   {
     key: "progress",
     text: "How far have you gone with buying a home?",
     subtext: "Be honest — there's no wrong answer here.",
     emoji: "🏠",
+    type: "list",
     options: [
       "I haven't really started yet",
       "I've been browsing listings casually",
@@ -28,35 +29,38 @@ const BASE_QUESTIONS = [
     text: "Do you have a sense of what you can borrow?",
     subtext: "This helps us understand how far along your finances are.",
     emoji: "💰",
+    type: "list",
     options: [
       "No idea yet",
       "I have a rough idea",
       "Yes — I know my budget",
     ],
   },
+  {
+    key: "state",
+    text: "Which state are you buying in?",
+    subtext: "Helps us show the right grants, professionals and resources for your location.",
+    emoji: "📍",
+    type: "grid",
+    options: STATES,
+  },
+  {
+    key: "firstHome",
+    text: "Is this your first home purchase?",
+    subtext: "First home buyers may be eligible for government grants and stamp duty concessions.",
+    emoji: "🎁",
+    type: "list",
+    options: [
+      "Yes — first time buying",
+      "No — I've bought before",
+      "Not sure / it's complicated",
+    ],
+  },
 ];
-
-const STATE_QUESTION = {
-  key: "state",
-  text: "Which state are you buying in?",
-  subtext: "Some professionals only operate in certain states — this helps us show the right people.",
-  emoji: "📍",
-  options: STATES,
-};
-
-function needsStateQuestion(answers: (string | null)[]): boolean {
-  const progress = answers[0];
-  const budget = answers[1];
-  if (!progress || !budget) return false;
-  const isSearching = progress === "I'm actively looking at properties";
-  const isBuying = progress === "I'm making or about to make offers";
-  const knowsBudget = budget === "Yes — I know my budget" || budget === "I have a rough idea";
-  return isSearching || isBuying;
-}
 
 export default function HouseQuestions() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<(string | null)[]>([null, null, null]);
+  const [answers, setAnswers] = useState<(string | null)[]>([null, null, null, null]);
   const [index, setIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
@@ -68,7 +72,7 @@ export default function HouseQuestions() {
     const raw = sessionStorage.getItem("houseQuestionState");
     if (!raw) return;
     const parsed: StoredState = JSON.parse(raw);
-    if (parsed.index < 3) {
+    if (parsed.index < QUESTIONS.length - 1) {
       setAnswers(parsed.answers);
       setIndex(parsed.index);
     } else {
@@ -76,17 +80,8 @@ export default function HouseQuestions() {
     }
   }, []);
 
-  function getQuestions(currentAnswers: (string | null)[]) {
-    const base = [...BASE_QUESTIONS];
-    if (needsStateQuestion(currentAnswers)) {
-      return [...base, STATE_QUESTION];
-    }
-    return base;
-  }
-
-  const questions = getQuestions(answers);
-  const q = questions[index];
-  const totalQuestions = needsStateQuestion(answers) ? 3 : 2;
+  const q = QUESTIONS[index];
+  const totalQuestions = QUESTIONS.length;
   const progress = ((index + 1) / totalQuestions) * 100;
 
   function persist(nextAnswers: (string | null)[], nextIndex: number) {
@@ -103,9 +98,7 @@ export default function HouseQuestions() {
     setTimeout(() => {
       const nextAnswers = [...answers];
       nextAnswers[index] = option;
-
-      const nextQuestions = getQuestions(nextAnswers);
-      const isLast = index >= nextQuestions.length - 1;
+      const isLast = index >= QUESTIONS.length - 1;
 
       if (!isLast) {
         setAnimating(true);
@@ -132,10 +125,7 @@ export default function HouseQuestions() {
 
   function handleBack() {
     if (animating) return;
-    if (index === 0) {
-      router.push("/house");
-      return;
-    }
+    if (index === 0) { router.push("/house"); return; }
     setAnimating(true);
     setDirection("back");
     setVisible(false);
@@ -148,8 +138,6 @@ export default function HouseQuestions() {
       setAnimating(false);
     }, 320);
   }
-
-  const isStateQuestion = q.key === "state";
 
   return (
     <main style={{
@@ -175,19 +163,14 @@ export default function HouseQuestions() {
             background: "none", border: "none", fontSize: 13, color: "#64748b",
             cursor: "pointer", padding: "6px 0", fontFamily: "inherit",
             display: "flex", alignItems: "center", gap: 6,
-          }}>
-            ← Back
-          </button>
+          }}>← Back</button>
           <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
             {index + 1} / {totalQuestions}
           </span>
         </div>
 
         {/* Progress bar */}
-        <div style={{
-          height: 3, background: "#e2e8f0", borderRadius: 99,
-          marginBottom: "2rem", overflow: "hidden",
-        }}>
+        <div style={{ height: 3, background: "#e2e8f0", borderRadius: 99, marginBottom: "2rem", overflow: "hidden" }}>
           <div style={{
             height: "100%", width: `${progress}%`,
             background: "linear-gradient(90deg, #6366f1, #8b5cf6)",
@@ -212,37 +195,26 @@ export default function HouseQuestions() {
             transition: "opacity 0.3s ease, transform 0.3s ease",
           }}
         >
-          {/* Emoji badge */}
           <div style={{
             width: 52, height: 52, borderRadius: 16,
             background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 24, marginBottom: "1.25rem",
-          }}>
-            {q.emoji}
-          </div>
+          }}>{q.emoji}</div>
 
-          {/* Question */}
           <h1 style={{
             fontFamily: "'DM Serif Display', serif",
             fontSize: "clamp(1.25rem, 4vw, 1.6rem)",
             fontWeight: 400, color: "#1e293b", lineHeight: 1.3,
             marginBottom: "0.5rem", letterSpacing: "-0.01em",
-          }}>
-            {q.text}
-          </h1>
+          }}>{q.text}</h1>
 
-          {/* Subtext */}
-          <p style={{
-            fontSize: 13, color: "#94a3b8", lineHeight: 1.6,
-            marginBottom: "1.75rem",
-          }}>
+          <p style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6, marginBottom: "1.75rem" }}>
             {q.subtext}
           </p>
 
-          {/* Options */}
-          {isStateQuestion ? (
-            /* State grid */
+          {/* Grid layout for state */}
+          {q.type === "grid" ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               {q.options.map((option) => {
                 const isSelected = selectedOption === option || answers[index] === option;
@@ -254,9 +226,7 @@ export default function HouseQuestions() {
                     style={{
                       padding: "12px 8px", borderRadius: 12,
                       border: isSelected ? "2px solid #6366f1" : "2px solid #f1f5f9",
-                      background: isSelected
-                        ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                        : "#f8fafc",
+                      background: isSelected ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
                       color: isSelected ? "#fff" : "#334155",
                       fontSize: 14, fontWeight: isSelected ? 600 : 500,
                       cursor: animating ? "default" : "pointer",
@@ -264,14 +234,12 @@ export default function HouseQuestions() {
                       transition: "all 0.15s ease",
                       boxShadow: isSelected ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
                     }}
-                  >
-                    {option}
-                  </button>
+                  >{option}</button>
                 );
               })}
             </div>
           ) : (
-            /* Regular options */
+            /* List layout */
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {q.options.map((option) => {
                 const isSelected = selectedOption === option;

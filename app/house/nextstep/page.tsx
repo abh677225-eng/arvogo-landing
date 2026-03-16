@@ -32,7 +32,7 @@ const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
   },
   buying: {
     heading: "The people you need right now ⚡",
-    subtext: "At this stage you need a broker for your loan, a conveyancer before you sign anything, and a building & pest inspector before you exchange contracts. A buyers agent is optional but can be valuable at auction.",
+    subtext: "Select the professionals you'd like an introduction to — fill in your details once and we'll handle the rest.",
   },
 };
 
@@ -45,19 +45,17 @@ const CATEGORY_INFO: Record<CategoryKey, {
   costType: "free" | "paid";
   status: "essential" | "optional" | "recommended";
   statusNote: string;
-  avatarGradient: string;
   showFor: PositionKey[];
 }> = {
   broker: {
     emoji: "🏦",
     title: "Mortgage broker",
     what: "Finds you the right loan from dozens of lenders and handles the application on your behalf.",
-    when: "Before you start seriously looking at properties. Pre-approval lets you move fast.",
+    when: "Before you start seriously looking. Pre-approval lets you move fast.",
     cost: "Free — paid by the lender, not you",
     costType: "free",
     status: "essential",
     statusNote: "You'll need one to get a loan",
-    avatarGradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     showFor: ["searching", "buying"],
   },
   "buyers-agent": {
@@ -69,19 +67,17 @@ const CATEGORY_INFO: Record<CategoryKey, {
     costType: "paid",
     status: "optional",
     statusNote: "Many buyers find homes without one",
-    avatarGradient: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
     showFor: ["buying"],
   },
   conveyancer: {
     emoji: "📋",
     title: "Conveyancer",
-    what: "Handles the legal transfer of property — reviewing contracts, title checks, and settlement.",
+    what: "Handles the legal transfer of property — contracts, title checks, and settlement.",
     when: "Before you exchange contracts. Essential, not optional.",
     cost: "Typically $800–$2,000 · Paid by you",
     costType: "paid",
     status: "essential",
     statusNote: "Legally required to settle",
-    avatarGradient: "linear-gradient(135deg, #10b981, #34d399)",
     showFor: ["buying"],
   },
   "building-pest": {
@@ -93,7 +89,6 @@ const CATEGORY_INFO: Record<CategoryKey, {
     costType: "paid",
     status: "recommended",
     statusNote: "Skipping this is a costly risk",
-    avatarGradient: "linear-gradient(135deg, #f59e0b, #fbbf24)",
     showFor: ["buying"],
   },
 };
@@ -137,188 +132,66 @@ function CostBadge({ cost, costType }: { cost: string; costType: "free" | "paid"
   );
 }
 
-function CategorySection({ categoryKey, onConnect }: {
-  categoryKey: CategoryKey;
-  onConnect: (category: CategoryKey, form: LeadForm) => void;
-}) {
-  const info = CATEGORY_INFO[categoryKey];
-  const [expanded, setExpanded] = useState(false);
-  const [form, setForm] = useState<LeadForm>({ name: "", email: "", phone: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit() {
-    if (!form.name.trim() || !form.email.trim()) return;
-    setSubmitting(true);
-    await onConnect(categoryKey, form);
-    setSubmitted(true);
-    setSubmitting(false);
-  }
-
-  return (
-    <div style={{
-      background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
-      borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
-      padding: "1.25rem 1.5rem", marginBottom: "1rem",
-      boxShadow: "0 4px 24px rgba(99,102,241,0.05)",
-    }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: "0.75rem" }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-          background: categoryKey === "broker" ? "linear-gradient(135deg, #eef2ff, #e0e7ff)"
-            : categoryKey === "buyers-agent" ? "linear-gradient(135deg, #e0f2fe, #bae6fd)"
-            : categoryKey === "conveyancer" ? "linear-gradient(135deg, #dcfce7, #bbf7d0)"
-            : "linear-gradient(135deg, #fef3c7, #fde68a)",
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
-        }}>{info.emoji}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{info.title}</p>
-            <StatusBadge status={info.status} />
-          </div>
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: "0 0 4px" }}>{info.statusNote}</p>
-          <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5 }}>{info.what}</p>
-          <CostBadge cost={info.cost} costType={info.costType} />
-        </div>
-      </div>
-
-      <div style={{
-        background: "#f8fafc", borderRadius: 10, padding: "8px 12px",
-        border: "1px solid #f1f5f9", marginBottom: "0.75rem",
-        display: "flex", alignItems: "flex-start", gap: 8,
-      }}>
-        <span style={{ fontSize: 14, flexShrink: 0 }}>⏰</span>
-        <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
-          <strong style={{ color: "#475569" }}>When:</strong> {info.when}
-        </p>
-      </div>
-
-      {!submitted ? (
-        <>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            style={{
-              width: "100%", padding: "9px 14px", borderRadius: 10,
-              background: expanded ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
-              border: expanded ? "none" : "1.5px solid #e2e8f0",
-              color: expanded ? "#fff" : "#6366f1",
-              fontSize: 12, fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit",
-              boxShadow: expanded ? "0 4px 12px rgba(99,102,241,0.25)" : "none",
-              transition: "all 0.2s ease",
-            }}
-          >
-            {expanded ? "Hide request form ↑" : `Request a ${info.title.toLowerCase()} introduction ↓`}
-          </button>
-
-          {expanded && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: "0.75rem" }}>
-              <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
-                Leave your details and we'll connect you with a suitable {info.title.toLowerCase()}. No obligation.
-              </p>
-              {[
-                { key: "name", label: "Your name", placeholder: "e.g. Alex", type: "text" },
-                { key: "email", label: "Email address", placeholder: "you@email.com", type: "email" },
-                { key: "phone", label: "Phone (optional)", placeholder: "04xx xxx xxx", type: "tel" },
-              ].map(field => (
-                <div key={field.key}>
-                  <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{field.label}</label>
-                  <input
-                    type={field.type} placeholder={field.placeholder}
-                    value={form[field.key as keyof LeadForm]}
-                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-                    style={{
-                      width: "100%", padding: "10px 12px", borderRadius: 10,
-                      border: "1.5px solid #e2e8f0", fontSize: 13,
-                      fontFamily: "inherit", background: "#f8fafc",
-                      outline: "none", boxSizing: "border-box" as const,
-                    }}
-                    onFocus={e => e.target.style.borderColor = "#a5b4fc"}
-                    onBlur={e => e.target.style.borderColor = "#e2e8f0"}
-                  />
-                </div>
-              ))}
-              <div>
-                <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Anything useful to know? (optional)</label>
-                <textarea
-                  placeholder="e.g. First home buyer, budget around $700k, looking in Melbourne's north..."
-                  value={form.message}
-                  onChange={e => setForm({ ...form, message: e.target.value })}
-                  rows={3}
-                  style={{
-                    width: "100%", padding: "10px 12px", borderRadius: 10,
-                    border: "1.5px solid #e2e8f0", fontSize: 13,
-                    fontFamily: "inherit", background: "#f8fafc",
-                    outline: "none", resize: "none" as const, boxSizing: "border-box" as const,
-                  }}
-                  onFocus={e => e.target.style.borderColor = "#a5b4fc"}
-                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
-                />
-              </div>
-              <button
-                onClick={handleSubmit}
-                disabled={!form.name.trim() || !form.email.trim() || submitting}
-                style={{
-                  width: "100%", padding: "11px", borderRadius: 10,
-                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
-                  cursor: "pointer", fontFamily: "inherit",
-                  opacity: !form.name.trim() || !form.email.trim() ? 0.5 : 1,
-                }}
-              >
-                {submitting ? "Sending... ⏳" : `Request a ${info.title.toLowerCase()} introduction ✦`}
-              </button>
-              <p style={{ fontSize: 11, color: "#94a3b8", textAlign: "center", margin: 0 }}>
-                We'll be in touch within 1 business day.
-              </p>
-            </div>
-          )}
-        </>
-      ) : (
-        <div style={{
-          background: "#f0fdf4", borderRadius: 12, padding: "1rem",
-          border: "1px solid #bbf7d0", textAlign: "center",
-        }}>
-          <p style={{ fontSize: 22, margin: "0 0 6px" }}>✅</p>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#16a34a", margin: "0 0 4px" }}>Request received</p>
-          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>
-            We'll connect you with a suitable {info.title.toLowerCase()} within 1 business day.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function HouseNextStep() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("browsing");
   const [state, setState] = useState<string | null>(null);
+  const [isFirstHome, setIsFirstHome] = useState<boolean>(false);
   const [visible, setVisible] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [selected, setSelected] = useState<Set<CategoryKey>>(new Set());
 
   useEffect(() => {
     const raw = sessionStorage.getItem("houseAnswers");
     if (!raw) return;
     const answers: (string | null)[] = JSON.parse(raw);
-    setPosition(mapAnswersToPosition(answers));
+    const pos = mapAnswersToPosition(answers);
+    setPosition(pos);
     setState(answers[2] || null);
+    setIsFirstHome(answers[3] === "Yes — first time buying");
+    // Pre-tick essentials
+    if (pos === "buying") setSelected(new Set(["broker", "conveyancer"] as CategoryKey[]));
+    else if (pos === "searching") setSelected(new Set(["broker"] as CategoryKey[]));
     setTimeout(() => setVisible(true), 100);
   }, []);
 
   const intro = INTROS[position];
   const visibleCategories = (Object.keys(CATEGORY_INFO) as CategoryKey[])
     .filter(k => CATEGORY_INFO[k].showFor.includes(position));
-  const showListingSites = position === "browsing" || position === "searching" || position === "buying";
-  const listingSites = position === "buying"
-    ? LISTING_SITES
-    : LISTING_SITES.slice(0, 2);
+  const showProfessionals = visibleCategories.length > 0;
+  const showListings = true;
+  const listingSites = position === "buying" ? LISTING_SITES : LISTING_SITES.slice(0, 2);
+  const isValid = name.trim() && email.trim() && selected.size > 0;
 
-  async function handleConnect(category: CategoryKey, form: LeadForm) {
+  function toggleCategory(key: CategoryKey) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  async function handleSubmit() {
+    if (!isValid) return;
+    setSubmitting(true);
     await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, category, position, state }),
+      body: JSON.stringify({
+        name, email, phone, message,
+        categories: Array.from(selected),
+        position, state, isFirstHome,
+      }),
     });
+    setSubmitted(true);
+    setSubmitting(false);
   }
 
   return (
@@ -362,7 +235,7 @@ export default function HouseNextStep() {
         </div>
 
         {/* Listing sites */}
-        {showListingSites && (
+        {showListings && (
           <div style={{
             background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
             borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
@@ -377,7 +250,7 @@ export default function HouseNextStep() {
               }}>🔎</div>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>Where to search for homes</p>
-                <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>The main platforms Australians use to find properties.</p>
+                <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>The main platforms Australians use.</p>
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -408,10 +281,212 @@ export default function HouseNextStep() {
           </div>
         )}
 
-        {/* Professionals */}
-        {visibleCategories.map(key => (
-          <CategorySection key={key} categoryKey={key} onConnect={handleConnect} />
-        ))}
+        {/* Professionals + single form */}
+        {showProfessionals && (
+          submitted ? (
+            <div style={{
+              background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+              borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+              padding: "2rem", textAlign: "center",
+              boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+              marginBottom: "1rem",
+            }}>
+              <div style={{
+                width: 60, height: 60, borderRadius: "50%", margin: "0 auto 1rem",
+                background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28,
+              }}>✅</div>
+              <h2 style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "1.5rem", fontWeight: 400, color: "#1e293b", marginBottom: 8,
+              }}>Request received</h2>
+              <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, marginBottom: "1.25rem" }}>
+                We'll connect you with the right people within 1 business day. No obligation — just introductions.
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: "1.25rem" }}>
+                {Array.from(selected).map(key => (
+                  <span key={key} style={{
+                    fontSize: 12, padding: "5px 12px", borderRadius: 99,
+                    background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe",
+                  }}>
+                    {CATEGORY_INFO[key].emoji} {CATEGORY_INFO[key].title}
+                  </span>
+                ))}
+              </div>
+              <button onClick={() => router.push("/house/path")} style={{
+                padding: "10px 24px", borderRadius: 12,
+                background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(99,102,241,0.2)",
+                color: "#6366f1", fontSize: 13, fontWeight: 500,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>Back to your path 🗺️</button>
+            </div>
+          ) : (
+            <>
+              {/* Category checkboxes */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1rem" }}>
+                {visibleCategories.map(key => {
+                  const info = CATEGORY_INFO[key];
+                  const isChecked = selected.has(key);
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => toggleCategory(key)}
+                      style={{
+                        background: isChecked ? "rgba(238,242,255,0.95)" : "rgba(255,255,255,0.85)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: 18,
+                        border: isChecked ? "2px solid rgba(99,102,241,0.3)" : "1px solid rgba(255,255,255,0.9)",
+                        padding: "1rem 1.25rem",
+                        cursor: "pointer",
+                        boxShadow: isChecked ? "0 4px 20px rgba(99,102,241,0.1)" : "0 2px 12px rgba(99,102,241,0.03)",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                        {/* Checkbox */}
+                        <div style={{
+                          width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                          background: isChecked ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f1f5f9",
+                          border: isChecked ? "none" : "2px solid #e2e8f0",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 12, color: "#fff",
+                          transition: "all 0.15s ease",
+                          boxShadow: isChecked ? "0 2px 8px rgba(99,102,241,0.3)" : "none",
+                        }}>
+                          {isChecked ? "✓" : ""}
+                        </div>
+                        {/* Icon */}
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                          background: key === "broker" ? "linear-gradient(135deg, #eef2ff, #e0e7ff)"
+                            : key === "buyers-agent" ? "linear-gradient(135deg, #e0f2fe, #bae6fd)"
+                            : key === "conveyancer" ? "linear-gradient(135deg, #dcfce7, #bbf7d0)"
+                            : "linear-gradient(135deg, #fef3c7, #fde68a)",
+                          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+                        }}>{info.emoji}</div>
+                        {/* Text */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{info.title}</p>
+                            <StatusBadge status={info.status} />
+                          </div>
+                          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: "0 0 4px" }}>{info.statusNote}</p>
+                          <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, margin: "0 0 6px" }}>{info.what}</p>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                            <CostBadge cost={info.cost} costType={info.costType} />
+                          </div>
+                          <div style={{
+                            padding: "6px 10px", borderRadius: 8,
+                            background: isChecked ? "rgba(255,255,255,0.7)" : "#f8fafc",
+                            border: "1px solid #f1f5f9",
+                            display: "flex", alignItems: "flex-start", gap: 6,
+                          }}>
+                            <span style={{ fontSize: 12, flexShrink: 0 }}>⏰</span>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
+                              <strong style={{ color: "#475569" }}>When:</strong> {info.when}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Single shared form */}
+              <div style={{
+                background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+                borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+                padding: "1.5rem", marginBottom: "1.25rem",
+                boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
+                  Your details
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div>
+                      <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Your name</label>
+                      <input type="text" placeholder="e.g. Alex" value={name} onChange={e => setName(e.target.value)}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", background: "#f8fafc", outline: "none", boxSizing: "border-box" as const }}
+                        onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                        onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Phone (optional)</label>
+                      <input type="tel" placeholder="04xx xxx xxx" value={phone} onChange={e => setPhone(e.target.value)}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", background: "#f8fafc", outline: "none", boxSizing: "border-box" as const }}
+                        onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                        onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Email address</label>
+                    <input type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", background: "#f8fafc", outline: "none", boxSizing: "border-box" as const }}
+                      onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Anything useful to know? (optional)</label>
+                    <textarea
+                      placeholder="e.g. First home buyer, budget around $700k, looking in Melbourne's north..."
+                      value={message} onChange={e => setMessage(e.target.value)} rows={3}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", background: "#f8fafc", outline: "none", resize: "none" as const, boxSizing: "border-box" as const }}
+                      onFocus={e => e.target.style.borderColor = "#a5b4fc"}
+                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                    />
+                  </div>
+                </div>
+
+                {/* Selected summary */}
+                {selected.size > 0 && (
+                  <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+                    <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 6px" }}>Requesting introductions to:</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {Array.from(selected).map(key => (
+                        <span key={key} style={{
+                          fontSize: 11, padding: "4px 10px", borderRadius: 99,
+                          background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe",
+                        }}>
+                          {CATEGORY_INFO[key].emoji} {CATEGORY_INFO[key].title}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selected.size === 0 && (
+                  <p style={{ fontSize: 12, color: "#f59e0b", margin: "1rem 0 0", textAlign: "center" }}>
+                    ↑ Select at least one professional above
+                  </p>
+                )}
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={!isValid || submitting}
+                  style={{
+                    width: "100%", padding: "13px", borderRadius: 12, marginTop: "1rem",
+                    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                    border: "none", color: "#fff", fontSize: 14, fontWeight: 600,
+                    cursor: isValid ? "pointer" : "not-allowed", fontFamily: "inherit",
+                    opacity: isValid ? 1 : 0.45,
+                    boxShadow: isValid ? "0 4px 20px rgba(99,102,241,0.3)" : "none",
+                    transition: "opacity 0.15s ease",
+                  }}
+                >
+                  {submitting ? "Sending... ⏳" : "Request introductions ✦"}
+                </button>
+                <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", margin: "8px 0 0" }}>
+                  We'll be in touch within 1 business day. No obligation.
+                </p>
+              </div>
+            </>
+          )
+        )}
 
         {/* Calculator nudge */}
         <div style={{
