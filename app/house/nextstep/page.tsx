@@ -132,6 +132,107 @@ function CostBadge({ cost, costType }: { cost: string; costType: "free" | "paid"
   );
 }
 
+
+const SEARCH_TIPS = {
+  shortlisting: {
+    icon: "📋",
+    title: "Shortlisting properties",
+    tips: [
+      "Write down non-negotiables vs nice-to-haves before you start — this stops you being swayed by a great kitchen in the wrong location",
+      "Drive past a property before booking an inspection — neighbourhood feel, noise and parking can rule it out in 5 minutes",
+      "Check sold prices on onthehouse.com.au before inspecting — know what comparable properties actually sold for, not just their listing price",
+    ],
+  },
+  openHome: {
+    icon: "🏠",
+    title: "At the open home",
+    tips: [
+      "Arrive early and stay late — agents talk more freely when fewer people are around",
+      "Look for moisture signs: ceiling stains, bubbling paint, musty smell, soft floorboards — these are common and costly",
+      "Test water pressure, check mobile signal, open every cupboard, assess natural light — and note the age of hot water system, AC and roof",
+      "Visit at a different time of day if serious — natural light changes everything",
+    ],
+  },
+  questions: {
+    icon: "💬",
+    title: "Questions to ask the agent",
+    tips: [
+      "Why is the vendor selling?",
+      "How long has it been on the market? Have previous contracts fallen through?",
+      "How old is the property? Were recent renovations permitted?",
+      "What are council rates? For apartments — body corporate fees and what they cover?",
+      "Are there any known defects, neighbour disputes, or planned developments nearby?",
+      "What is the vendor\'s preferred settlement timeframe?",
+    ],
+  },
+};
+
+function SearchTipsCard() {
+  const [activeTab, setActiveTab] = useState<"shortlisting" | "openHome" | "questions">("shortlisting");
+  const tab = SEARCH_TIPS[activeTab];
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+      borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+      padding: "1.25rem 1.5rem", marginBottom: "1rem",
+      boxShadow: "0 4px 24px rgba(99,102,241,0.05)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+        }}>🔍</div>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>How to search smart</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Shortlisting, open homes and the right questions to ask.</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 6, marginBottom: "0.75rem" }}>
+        {(["shortlisting", "openHome", "questions"] as const).map(key => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            style={{
+              flex: 1, padding: "7px 4px", borderRadius: 10, fontSize: 11, fontWeight: 600,
+              background: activeTab === key ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+              border: activeTab === key ? "none" : "1.5px solid #e2e8f0",
+              color: activeTab === key ? "#fff" : "#64748b",
+              cursor: "pointer", fontFamily: "inherit",
+              transition: "all 0.15s ease",
+              boxShadow: activeTab === key ? "0 2px 8px rgba(99,102,241,0.25)" : "none",
+            }}
+          >
+            {SEARCH_TIPS[key].icon} {key === "shortlisting" ? "Shortlist" : key === "openHome" ? "Open home" : "Questions"}
+          </button>
+        ))}
+      </div>
+
+      {/* Tips */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {tab.tips.map((tip, i) => (
+          <div key={i} style={{
+            display: "flex", gap: 10, alignItems: "flex-start",
+            background: "#f8fafc", borderRadius: 10, padding: "9px 12px",
+            border: "1px solid #f1f5f9",
+          }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: "50%", flexShrink: 0, marginTop: 1,
+              background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 10, fontWeight: 700, color: "#6366f1",
+            }}>{i + 1}</div>
+            <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.6, margin: 0 }}>{tip}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HouseNextStep() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("browsing");
@@ -279,6 +380,11 @@ export default function HouseNextStep() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Search tips — searching and buying users */}
+        {(position === "searching" || position === "buying") && (
+          <SearchTipsCard />
         )}
 
         {/* Professionals + single form */}
