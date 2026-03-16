@@ -10,6 +10,25 @@ const meshBg = `
   #eef2ff
 `;
 
+// ============================================================
+// MAINTENANCE GUIDE
+// ============================================================
+// This calculator has 4 values that need periodic updating.
+// Each is marked with a MAINTENANCE comment below.
+// Total time to update: ~5 mins per change.
+// ============================================================
+
+// MAINTENANCE #1 — INTEREST RATES
+// Update after every RBA meeting (8x per year, first Tuesday of each month except Jan)
+// Check: rba.gov.au → Media Releases → Cash Rate
+// Investment rate is typically 0.25–0.50% above owner-occupier
+// APRA buffer is 3% — mandated by APRA, rarely changes
+const RATES = {
+  ownerOccupier: 0.0625,  // Current: 6.25% — last updated: March 2026
+  investment: 0.0655,      // Current: 6.55% — last updated: March 2026
+  apraBuffer: 0.03,        // APRA mandated buffer — check apra.gov.au if changed
+};
+
 const STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
 
 const INCOME_TYPES = [
@@ -43,7 +62,11 @@ type Results = {
   contractRate: number;
 };
 
-// ATO 2024-25 tax brackets
+// MAINTENANCE #2 — ATO TAX BRACKETS
+// Update on 1 July each year when new financial year begins
+// Check: ato.gov.au/rates/individual-income-tax-rates
+// Current: 2024-25 rates (valid until 30 June 2025)
+// Also update the Medicare levy rate (currently 2%) if it changes
 function calcAnnualTax(gross: number): number {
   if (gross <= 18200) return 0;
   if (gross <= 45000) return (gross - 18200) * 0.19;
@@ -52,7 +75,11 @@ function calcAnnualTax(gross: number): number {
   return 51667 + (gross - 180000) * 0.45;
 }
 
-// HEM benchmarks — income-scaled
+// MAINTENANCE #3 — HEM BENCHMARKS
+// Update annually — Melbourne Institute publishes updated HEM each year
+// Banks do not publish exact HEM figures — these are close estimates
+// Check: canstar.com.au or mozo.com.au for published HEM estimates
+// Current estimates based on 2024 Melbourne Institute data
 function calcHEM(grossIncome: number, hasPartner: boolean, dependants: number): number {
   let base: number;
   if (!hasPartner) {
@@ -63,6 +90,19 @@ function calcHEM(grossIncome: number, hasPartner: boolean, dependants: number): 
   return base + dependants * 650;
 }
 
+// MAINTENANCE #4 — FHOG AMOUNTS & THRESHOLDS
+// Update when any state government changes their grant
+// Set a Google Alert for "first home owner grant Australia" to catch announcements
+// Check each state revenue office:
+//   VIC: sro.vic.gov.au
+//   NSW: revenue.nsw.gov.au
+//   QLD: qro.qld.gov.au
+//   SA: revenuesa.sa.gov.au
+//   WA: finance.wa.gov.au
+//   TAS: sro.tas.gov.au
+//   ACT: revenue.act.gov.au (no FHOG in ACT — has Home Buyer Concession instead)
+//   NT: treasury.nt.gov.au
+// Last verified: March 2026
 const FHOG: Record<string, { amount: number; threshold: number }> = {
   VIC: { amount: 10000, threshold: 750000 },
   NSW: { amount: 10000, threshold: 600000 },
@@ -133,8 +173,8 @@ function calculateResults(form: typeof defaultForm): Results {
     hem + propertyExpenses;
 
   // Rates — investment is higher
-  const contractRate = form.purpose === "investment" ? 0.0655 : 0.0625;
-  const assessmentRate = contractRate + 0.03;
+  const contractRate = form.purpose === "investment" ? RATES.investment : RATES.ownerOccupier;
+  const assessmentRate = contractRate + RATES.apraBuffer;
   const months = 30 * 12;
   const monthlyAssessRate = assessmentRate / 12;
 
