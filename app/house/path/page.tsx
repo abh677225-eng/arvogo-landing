@@ -207,7 +207,20 @@ const AUCTION_STEPS = [
   },
 ];
 
+type Step = {
+  number: number;
+  emoji: string;
+  title: string;
+  summary: string;
+  detail: string;
+  timeframe: string;
+  cost: string | null;
+  whoNeeds: string;
+  cta: { label: string; href: string } | null;
+  resources: { name: string; url: string }[] | null;
+};
 
+function StepCard({ step, highlight }: { step: Step; highlight?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
