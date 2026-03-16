@@ -30,6 +30,39 @@ const RATES = {
 };
 
 const STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
+type StateCode = "VIC" | "NSW" | "QLD" | "SA" | "WA" | "TAS" | "ACT" | "NT";
+
+// ── FIRST HOME BENEFITS DATA ──────────────────────────────
+// MAINTENANCE: Last verified March 2026 — same update schedule as RATES above
+
+const FHOG_DATA: Record<StateCode, { amount: number; threshold: number | null; newOnly: boolean; note: string; expiry?: string }> = {
+  VIC: { amount: 10000, threshold: 750000, newOnly: true, note: "New homes only. Must move in within 12 months." },
+  NSW: { amount: 10000, threshold: 750000, newOnly: true, note: "New homes only. Must move in within 12 months." },
+  QLD: { amount: 30000, threshold: 750000, newOnly: true, note: "Highest mainland grant. New homes only." },
+  SA:  { amount: 15000, threshold: null,   newOnly: true, note: "No price cap — any value new home qualifies." },
+  WA:  { amount: 10000, threshold: 750000, newOnly: false, note: "Applies to both new and established homes." },
+  TAS: { amount: 30000, threshold: null,   newOnly: true,  note: "No price cap.", expiry: "June 2026" },
+  ACT: { amount: 0,     threshold: null,   newOnly: false, note: "No FHOG in ACT — Home Buyer Concession Scheme instead." },
+  NT:  { amount: 50000, threshold: 750000, newOnly: true,  note: "HomeGrown Grant — highest in Australia.", expiry: "September 2026" },
+};
+
+const STAMP_DUTY_DATA: Record<StateCode, { exemptThreshold: number | null; concessionThreshold: number | null; note: string; expiry?: string }> = {
+  VIC: { exemptThreshold: 600000, concessionThreshold: 750000, note: "Full exemption under $600k. Concession $600k–$750k." },
+  NSW: { exemptThreshold: 800000, concessionThreshold: 1000000, note: "Full exemption under $800k. Concession $800k–$1M." },
+  QLD: { exemptThreshold: 700000, concessionThreshold: 800000, note: "New homes: full exemption under $700k. Concession to $800k." },
+  SA:  { exemptThreshold: null,   concessionThreshold: null,    note: "No stamp duty exemption in SA." },
+  WA:  { exemptThreshold: 500000, concessionThreshold: 700000,  note: "Full exemption under $500k. Concession to $700k." },
+  TAS: { exemptThreshold: 750000, concessionThreshold: null,    note: "Full exemption under $750k.", expiry: "June 2026" },
+  ACT: { exemptThreshold: 1020000, concessionThreshold: null,   note: "Home Buyer Concession Scheme — full waiver up to $1.02M (income tested)." },
+  NT:  { exemptThreshold: null,   concessionThreshold: null,    note: "No stamp duty exemption currently." },
+};
+
+const FEDERAL_SCHEMES_DATA = [
+  { emoji: "🏦", name: "5% Deposit Scheme", headline: "Buy with 5% deposit — no LMI", detail: "Government guarantees 15% of your loan. Unlimited places, no income caps (from Oct 2025). Owner-occupier only.", url: "https://www.housingaustralia.gov.au/support-buy-home/first-home-guarantee" },
+  { emoji: "👨‍👧", name: "Family Home Guarantee", headline: "Single parents: 2% deposit, no LMI", detail: "For single parents with at least one dependent. Government guarantees 18% of your loan.", url: "https://www.housingaustralia.gov.au/support-buy-home/family-home-guarantee" },
+  { emoji: "💼", name: "First Home Super Saver", headline: "Save your deposit in super", detail: "Withdraw up to $50k in voluntary super contributions for your deposit. Taxed at 15% instead of your marginal rate.", url: "https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/withdrawing-and-using-your-super/first-home-super-saver-scheme" },
+  { emoji: "🤝", name: "Help to Buy", headline: "Government co-buys with you", detail: "Government contributes up to 40% of a new home's price (30% for existing). 10,000 places/year. Income caps apply.", url: "https://www.housingaustralia.gov.au/support-buy-home/help-to-buy" },
+];
 
 const INCOME_TYPES = [
   { value: "rental", label: "Rental income", shade: 0.8 },
@@ -308,6 +341,107 @@ function Bar({ label, value, max, color }: { label: string; value: number; max: 
       <div style={{ height: 6, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: color, transition: "width 0.6s ease" }} />
       </div>
+    </div>
+  );
+}
+
+
+function FirstHomeBenefitsSection({ state, purchasePrice }: { state: StateCode; purchasePrice: number }) {
+  const [tab, setTab] = useState<"state" | "federal">("state");
+  const [expandedFederal, setExpandedFederal] = useState<string | null>(null);
+
+  const fhog = FHOG_DATA[state];
+  const duty = STAMP_DUTY_DATA[state];
+  const fhogEligible = fhog.amount > 0 && (fhog.threshold === null || purchasePrice === 0 || purchasePrice <= fhog.threshold);
+  const stampExempt = duty.exemptThreshold !== null && purchasePrice > 0 && purchasePrice <= duty.exemptThreshold;
+  const stampConcession = !stampExempt && duty.concessionThreshold !== null && purchasePrice > 0 && purchasePrice <= duty.concessionThreshold;
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+      borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)",
+      padding: "1.25rem 1.5rem", marginBottom: "1rem",
+      boxShadow: "0 4px 24px rgba(99,102,241,0.06)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
+        <div style={{ width: 38, height: 38, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #d1fae5, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎁</div>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>First home buyer benefits</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Grants, concessions and schemes for {state}</p>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: "1rem" }}>
+        {[{ key: "state", label: `${state} benefits` }, { key: "federal", label: "Federal schemes" }].map(t => (
+          <button key={t.key} onClick={() => setTab(t.key as "state" | "federal")} style={{
+            flex: 1, padding: "8px", borderRadius: 10, fontSize: 12, fontWeight: 600,
+            background: tab === t.key ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc",
+            border: tab === t.key ? "none" : "1.5px solid #e2e8f0",
+            color: tab === t.key ? "#fff" : "#64748b",
+            cursor: "pointer", fontFamily: "inherit",
+            boxShadow: tab === t.key ? "0 2px 8px rgba(99,102,241,0.25)" : "none",
+            transition: "all 0.15s ease",
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      {tab === "state" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* FHOG */}
+          <div style={{ borderRadius: 14, background: fhogEligible ? "linear-gradient(135deg, #d1fae5, #a7f3d0)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: fhogEligible ? "#065f46" : "#94a3b8", margin: 0 }}>First Home Owner Grant</p>
+              {fhog.amount > 0
+                ? <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: fhogEligible ? "#059669" : "#e2e8f0", color: fhogEligible ? "#fff" : "#94a3b8" }}>{fhogEligible ? `${fmt(fhog.amount)} ✓` : `${fmt(fhog.amount)} — check price cap`}</span>
+                : <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>
+              }
+            </div>
+            <p style={{ fontSize: 12, color: fhogEligible ? "#047857" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{fhog.note}</p>
+            {fhog.threshold && <p style={{ fontSize: 11, color: fhogEligible ? "#059669" : "#94a3b8", margin: 0 }}>Price cap: {fmt(fhog.threshold)}{purchasePrice > 0 && purchasePrice > fhog.threshold ? " — your price exceeds this" : ""}</p>}
+            {fhog.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {fhog.expiry}</p>}
+          </div>
+
+          {/* Stamp duty */}
+          <div style={{ borderRadius: 14, background: (stampExempt || stampConcession || duty.exemptThreshold) ? "linear-gradient(135deg, #dbeafe, #bfdbfe)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: 0 }}>Stamp duty concession</p>
+              {stampExempt && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#1d4ed8", color: "#fff" }}>Exempt ✓</span>}
+              {stampConcession && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#3b82f6", color: "#fff" }}>Concession ✓</span>}
+              {!stampExempt && !stampConcession && duty.exemptThreshold && <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#dbeafe", color: "#1e40af" }}>Available</span>}
+              {!duty.exemptThreshold && !duty.concessionThreshold && state !== "ACT" && <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>}
+            </div>
+            <p style={{ fontSize: 12, color: duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{duty.note}</p>
+            {duty.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {duty.expiry}</p>}
+          </div>
+
+          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>✦ Confirm exact eligibility with your broker or state revenue office.</p>
+        </div>
+      )}
+
+      {tab === "federal" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {FEDERAL_SCHEMES_DATA.map(scheme => (
+            <div key={scheme.name} style={{ background: expandedFederal === scheme.name ? "#f8fafc" : "rgba(255,255,255,0.7)", borderRadius: 14, border: "1px solid #f1f5f9", overflow: "hidden" }}>
+              <button onClick={() => setExpandedFederal(expandedFederal === scheme.name ? null : scheme.name)}
+                style={{ width: "100%", textAlign: "left", padding: "0.875rem 1rem", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{scheme.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{scheme.name}</p>
+                  <p style={{ fontSize: 11, color: "#64748b", margin: 0 }}>{scheme.headline}</p>
+                </div>
+                <span style={{ fontSize: 12, color: "#94a3b8" }}>{expandedFederal === scheme.name ? "↑" : "↓"}</span>
+              </button>
+              {expandedFederal === scheme.name && (
+                <div style={{ padding: "0 1rem 1rem" }}>
+                  <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7, margin: "0 0 8px" }}>{scheme.detail}</p>
+                  <a href={scheme.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>Official information ↗</a>
+                </div>
+              )}
+            </div>
+          ))}
+          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: "4px 0 0" }}>✦ Apply through a participating lender or mortgage broker.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -660,34 +794,12 @@ export default function ServiceabilityCalculator() {
               )}
             </Card>
 
-            {/* FHOG */}
-            {!isInvestment && (
-              <Card>
-                <SectionLabel emoji="🎁" label="First home owner grant" />
-                {results.fhogEligible ? (
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                      <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", fontWeight: 400, color: "#16a34a", margin: 0 }}>
-                        {fmt(results.fhogAmount)}
-                      </p>
-                      <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
-                        ✅ Likely eligible
-                      </span>
-                    </div>
-                    <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-                      Based on your state ({form.state}) and purchase price. Confirm eligibility with your broker.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ background: "#f8fafc", borderRadius: 12, padding: "0.75rem 1rem", border: "1px solid #f1f5f9" }}>
-                    <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-                      {form.firstHome === "no"
-                        ? "FHOG is not available for non-first home buyers."
-                        : `Your purchase price exceeds the FHOG threshold for ${form.state}.`}
-                    </p>
-                  </div>
-                )}
-              </Card>
+            {/* First home benefits — full component */}
+            {!isInvestment && form.firstHome === "yes" && (
+              <FirstHomeBenefitsSection
+                state={form.state as StateCode}
+                purchasePrice={parseFloat(form.purchasePrice) || results.borrowingCapacity}
+              />
             )}
 
             {/* Disclaimer */}
