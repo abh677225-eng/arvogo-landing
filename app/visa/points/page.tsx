@@ -28,39 +28,45 @@ const POINTS_CATEGORIES = [
   },
   {
     key: "english", label: "English language",
+    hint: "Competent = IELTS 6 each band / PTE 50+ · Proficient = IELTS 7 each band / PTE 65+ · Superior = IELTS 8 each band / PTE 79+",
     options: [
-      { label: "Competent (IELTS 6 / PTE 50)", points: 0 },
-      { label: "Proficient (IELTS 7 / PTE 65)", points: 10 },
-      { label: "Superior (IELTS 8 / PTE 79)", points: 20 },
+      { label: "Not yet tested / below competent", points: -1 },
+      { label: "Competent — IELTS 6 each band / PTE 50+", points: 0 },
+      { label: "Proficient — IELTS 7 each band / PTE 65+", points: 10 },
+      { label: "Superior — IELTS 8 each band / PTE 79+", points: 20 },
     ],
   },
   {
     key: "overseas_work", label: "Overseas skilled employment",
-    hint: "In your nominated occupation, in the past 10 years",
+    hint: "In your nominated occupation, in the past 10 years. Min. 20 hrs/week for remuneration.",
     options: [
-      { label: "Less than 3 years", points: 0 },
+      { label: "Not applicable / less than 3 years", points: -1 },
       { label: "3–4 years", points: 5 },
       { label: "5–7 years", points: 10 },
-      { label: "8–10 years", points: 15 },
+      { label: "8 years or more", points: 15 },
     ],
   },
   {
     key: "australian_work", label: "Australian skilled employment",
-    hint: "In your nominated occupation, in the past 10 years",
+    hint: "In your nominated occupation, in the past 10 years. Min. 20 hrs/week. Combined overseas + Australian max is 20 pts.",
     options: [
-      { label: "None", points: 0 },
+      { label: "None", points: -1 },
       { label: "1–2 years", points: 5 },
       { label: "3–4 years", points: 10 },
       { label: "5–7 years", points: 15 },
-      { label: "8–10 years", points: 20 },
+      { label: "8 years or more", points: 20 },
     ],
   },
   {
     key: "education", label: "Educational qualifications",
+    hint: "Points for your highest qualification only. Masters by research may also qualify for the specialist education bonus below.",
     options: [
-      { label: "None of the below", points: 0 },
+      { label: "Select qualification", points: -1 },
+      { label: "No recognised qualification", points: 0 },
       { label: "Diploma or trade qualification", points: 10 },
       { label: "Bachelor degree", points: 15 },
+      { label: "Masters by coursework", points: 15 },
+      { label: "Masters by research", points: 15 },
       { label: "Doctorate (PhD)", points: 20 },
     ],
   },
@@ -82,13 +88,13 @@ const POINTS_CATEGORIES = [
   },
   {
     key: "partner", label: "Partner skills / status",
+    hint: "You get 10 pts if your partner has a skills assessment + competent English, OR if you have no partner / partner is an Australian citizen or PR.",
     options: [
-      { label: "Partner with competent English + skilled assessment", points: 10 },
-      { label: "Partner with superior English (no skills requirement)", points: 10 },
-      { label: "No partner or partner is Australian citizen/PR", points: 10 },
-      { label: "Single or partner not meeting requirements", points: 0 },
+      { label: "Select option", points: -1 },
+      { label: "Partner has skills assessment + competent English", points: 10 },
+      { label: "No partner, or partner is Australian citizen / PR", points: 10 },
+      { label: "Partner does not meet skills or English requirements", points: 0 },
     ],
-    hint: "10 pts if partner has skills assessment + competent English, OR you are single/partner is citizen/PR",
   },
   {
     key: "professional_year", label: "Professional Year in Australia",
@@ -117,17 +123,17 @@ const POINTS_CATEGORIES = [
 ];
 
 const DEFAULTS: Record<string, number> = {
-  age: 30,
-  english: 10,
-  overseas_work: 10,
-  australian_work: 5,
-  education: 15,
-  australian_study: 0,
-  specialist_education: 0,
-  partner: 10,
-  professional_year: 0,
-  naati: 0,
-  regional_study: 0,
+  age: -1,
+  english: -1,
+  overseas_work: -1,
+  australian_work: -1,
+  education: -1,
+  specialist_education: -1,
+  partner: -1,
+  professional_year: -1,
+  naati: -1,
+  australian_study: -1,
+  regional_study: -1,
 };
 
 function getViabilityLabel(baseScore: number, visaBonus: number): { label: string; color: string; bg: string; border: string; detail: string } {
@@ -140,7 +146,7 @@ export default function VisaPointsCalculator() {
   const router = useRouter();
   const [scores, setScores] = useState<Record<string, number>>(DEFAULTS);
 
-  const baseScore = Object.values(scores).reduce((a, b) => a + b, 0);
+  const baseScore = Object.values(scores).filter(v => v >= 0).reduce((a, b) => a + b, 0);
   const score189 = baseScore;
   const score190 = baseScore + 5;
   const score491 = baseScore + 15;
@@ -150,7 +156,7 @@ export default function VisaPointsCalculator() {
   const v491 = getViabilityLabel(baseScore, 15);
 
   const pct = Math.min((baseScore / 100) * 100, 100);
-  const barColor = baseScore >= 90 ? "#059669" : baseScore >= 80 ? "#d97706" : baseScore >= 65 ? "#6366f1" : "#ef4444";
+  const barColor = baseScore === 0 ? "#e2e8f0" : baseScore >= 90 ? "#059669" : baseScore >= 80 ? "#d97706" : baseScore >= 65 ? "#6366f1" : "#ef4444";
 
   function fmt(n: number) { return "$" + n.toLocaleString("en-AU"); }
 
@@ -193,8 +199,8 @@ export default function VisaPointsCalculator() {
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 8 }}>
             <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(2.5rem, 8vw, 3.5rem)", fontWeight: 400, color: "#1e293b", lineHeight: 1, letterSpacing: "-0.02em", margin: 0 }}>{baseScore}</p>
             <span style={{ fontSize: 16, color: "#64748b" }}>points</span>
-            <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 99, background: baseScore >= 65 ? "#d1fae5" : "#fee2e2", color: baseScore >= 65 ? "#059669" : "#ef4444", border: `1px solid ${baseScore >= 65 ? "#a7f3d0" : "#fca5a5"}`, marginLeft: "auto" }}>
-              {baseScore >= 65 ? "✓ Meets minimum" : "✗ Below minimum (65)"}
+            <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 99, background: baseScore === 0 ? "#f8fafc" : baseScore >= 65 ? "#d1fae5" : "#fee2e2", color: baseScore === 0 ? "#94a3b8" : baseScore >= 65 ? "#059669" : "#ef4444", border: `1px solid ${baseScore === 0 ? "#e2e8f0" : baseScore >= 65 ? "#a7f3d0" : "#fca5a5"}`, marginLeft: "auto" }}>
+              {baseScore === 0 ? "Select options below" : baseScore >= 65 ? "✓ Meets minimum" : "✗ Below minimum (65)"}
             </span>
           </div>
           <div style={{ height: 8, background: "rgba(255,255,255,0.4)", borderRadius: 99, overflow: "hidden", marginBottom: 6 }}>
@@ -247,14 +253,14 @@ export default function VisaPointsCalculator() {
                   <select
                     value={scores[cat.key]}
                     onChange={e => setScores(prev => ({ ...prev, [cat.key]: parseInt(e.target.value) }))}
-                    style={{ padding: "6px 10px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 12, fontFamily: "inherit", background: "#f8fafc", color: "#1e293b", outline: "none", maxWidth: 160 }}
+                    style={{ padding: "6px 10px", borderRadius: 8, border: `1.5px solid ${scores[cat.key] === -1 ? "#e2e8f0" : "#a5b4fc"}`, fontSize: 12, fontFamily: "inherit", background: scores[cat.key] === -1 ? "#f8fafc" : "#f5f3ff", color: scores[cat.key] === -1 ? "#94a3b8" : "#1e293b", outline: "none", maxWidth: 180 }}
                   >
                     {cat.options.map(opt => (
                       <option key={opt.label} value={opt.points}>{opt.label}</option>
                     ))}
                   </select>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: scores[cat.key] > 0 ? "#6366f1" : "#94a3b8", minWidth: 36, textAlign: "right" }}>
-                    {scores[cat.key] > 0 ? `+${scores[cat.key]}` : "0"}
+                  <span style={{ fontSize: 13, fontWeight: 700, color: scores[cat.key] > 0 ? "#6366f1" : scores[cat.key] === 0 ? "#94a3b8" : "#e2e8f0", minWidth: 36, textAlign: "right" }}>
+                    {scores[cat.key] === -1 ? "—" : scores[cat.key] === 0 ? "+0" : `+${scores[cat.key]}`}
                   </span>
                 </div>
               </div>
