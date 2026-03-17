@@ -79,7 +79,7 @@ const CATEGORY_DOCS: Record<CategoryKey, { heading: string; docs: DocItem[] }> =
     heading: "What you need for your working holiday visa",
     docs: [
       { label: "Valid passport", note: "Must be from an eligible country", status: "required" },
-      { label: "Application fee", note: "AUD $635 — payable online at time of application", status: "required" },
+      { label: "Application fee", note: "Check current fee at immi.homeaffairs.gov.au before applying", status: "required" },
       { label: "ImmiAccount login", note: "Create at immi.homeaffairs.gov.au before applying", status: "required" },
       { label: "Health declaration", note: "Answered as part of the online application — no medical required", status: "required" },
       { label: "Evidence of regional work (2nd/3rd year only)", note: "Payslips and employer confirmation of 88 days / 6 months regional work", status: "if-applicable" },
@@ -104,41 +104,17 @@ const PROFESSIONALS = [
     key: "agent",
     emoji: "⚖️",
     title: "Registered migration agent (MARA)",
-    what: "Lodges visa applications on your behalf, advises on visa type and eligibility, and handles all Department of Home Affairs correspondence.",
+    what: "Lodges visa applications on your behalf, advises on visa type and eligibility, and handles all Department of Home Affairs correspondence. Many migration firms also assist with institution selection and CoE for student visas — ask your agent.",
     when: "For any complex application — PR, family, employer sponsored. Working holiday and eVisitor/ETA you can usually do yourself.",
     cost: "From $500 (simple) to $5,000+ (PR/family). Free consultation typically available.",
     costType: "paid" as const,
     status: "essential" as const,
     statusNote: "Required for PR, family and employer sponsored",
     iconBg: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-    showFor: ["student", "pr", "visitor", "sponsored", "family"] as CategoryKey[],
+    showFor: ["student", "pr", "visitor", "sponsored", "whv", "family"] as CategoryKey[],
   },
-  {
-    key: "education",
-    emoji: "🎓",
-    title: "Education agent",
-    what: "Helps with institution selection, course advice, and managing your CoE. Usually free to students — paid by the institution.",
-    when: "Before you choose an institution or apply for your CoE.",
-    cost: "Free — paid by institutions",
-    costType: "free" as const,
-    status: "recommended" as const,
-    statusNote: "Useful if still choosing an institution",
-    iconBg: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-    showFor: ["student"] as CategoryKey[],
-  },
-  {
-    key: "english",
-    emoji: "📖",
-    title: "English test prep provider",
-    what: "Structured preparation for IELTS, PTE or OET. Higher English scores mean more points for PR and better visa outcomes.",
-    when: "Before taking your English test — especially if aiming for superior English (IELTS 8+) for extra PR points.",
-    cost: "Course fees vary — typically $300–$1,500",
-    costType: "paid" as const,
-    status: "recommended" as const,
-    statusNote: "Worth it for PR — each band score level adds 10 points",
-    iconBg: "linear-gradient(135deg, #fef3c7, #fde68a)",
-    showFor: ["pr", "sponsored", "student"] as CategoryKey[],
-  },
+
+
 ];
 
 function StatusBadge({ status }: { status: "essential" | "recommended" }) {
@@ -151,7 +127,7 @@ function StatusBadge({ status }: { status: "essential" | "recommended" }) {
 
 function DocStatusBadge({ status }: { status: "required" | "if-applicable" | "recommended" }) {
   const cfg = {
-    required:      { bg: "#fef2f2", color: "#ef4444", border: "#fecaca", label: "Required" },
+    required:      { bg: "#fff7ed", color: "#ea580c", border: "#fed7aa", label: "Typically required" },
     "if-applicable": { bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "If applicable" },
     recommended:   { bg: "#eef2ff", color: "#6366f1", border: "#c7d2fe", label: "Recommended" },
   }[status];
@@ -199,7 +175,18 @@ export default function VisaNextStep() {
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
       <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: "4rem", paddingBottom: "4rem", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transition: "opacity 0.5s ease, transform 0.5s ease" }}>
 
-        <button onClick={() => router.push("/visa/position")} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        <button onClick={() => router.push("/visa/position")} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "1rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        {/* Disclaimer banner */}
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, padding: "10px 14px", marginBottom: "1.25rem", display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+          <p style={{ fontSize: 12, color: "#92400e", lineHeight: 1.6, margin: 0 }}>
+            <strong>General information only — not migration advice.</strong> Document requirements vary by nationality and individual circumstances. Confirm your specific requirements with a{" "}
+            <a href="https://www.mara.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>MARA-registered migration agent</a>
+            {" "}or at{" "}
+            <a href="https://www.immi.homeaffairs.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>immi.homeaffairs.gov.au</a>.
+          </p>
+        </div>
+
 
         {/* Header */}
         <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.5rem", marginBottom: "1.25rem", boxShadow: "0 4px 24px rgba(99,102,241,0.06)" }}>
@@ -250,7 +237,7 @@ export default function VisaNextStep() {
             })}
           </div>
           <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: "10px 0 0" }}>
-            ✦ Document requirements vary by individual circumstances. Confirm with a migration agent or at{" "}
+            ✦ This list is a general guide only — requirements vary significantly by nationality, health history and individual circumstances. Always confirm your specific requirements with a migration agent or at{" "}
             <a href="https://www.immi.homeaffairs.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>immi.homeaffairs.gov.au</a>
           </p>
         </div>
@@ -319,7 +306,7 @@ export default function VisaNextStep() {
         )}
 
         <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
-          ✦ This is orientation only, not legal advice. Visa rules change — confirm with a MARA-registered migration agent.
+          ✦ General information only — not migration advice. Document requirements, fees and rules change. Always confirm your specific situation with a MARA-registered migration agent or at immi.homeaffairs.gov.au.
         </p>
       </div>
     </main>

@@ -20,7 +20,7 @@ const CATEGORIES = [
 ];
 
 const benefits = [
-  { emoji: "📋", title: "Understand your pathway", desc: "See exactly what applies to your category and situation" },
+  { emoji: "📋", title: "Understand your pathway", desc: "Get a general overview of your category and typical requirements" },
   { emoji: "🧮", title: "Points calculator for PR", desc: "Interactive tool showing your score across all skilled visas" },
   { emoji: "🤝", title: "Connect with a migration agent", desc: "MARA-registered agents who know your specific visa type" },
 ];
@@ -47,7 +47,7 @@ export default function VisaEntry() {
             Applying for an Australian visa?
           </h1>
           <p style={{ fontSize: 15, color: "#64748b", lineHeight: 1.7 }}>
-            Every visa journey is different. Select your category and we'll show you exactly where you are, what comes next, and who can help.
+            Every visa journey is different. Select your category and we'll help you understand the general process, typical documents, and who can help — as a starting point before speaking with a migration agent.
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function VisaEntry() {
           </div>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>No sign-up. No advice. No pressure. Takes 2 minutes.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>General information only — not migration advice. No sign-up. No pressure.</p>
 
       </div>
     </main>

@@ -34,21 +34,21 @@ function mapToPosition(category: string, answers: (string | null)[]): PositionDa
       emoji: "🔄", title: "Extending your student visa", tagline: "You're already here — extending is simpler than your original application.",
       gradient: "linear-gradient(135deg, #ede9fe, #ddd6fe)", accent: "#7c3aed",
       nextTitle: "Lodge your extension before your current visa expires",
-      nextText: "You must apply for an extension before your current visa expires — not after. Log into ImmiAccount and check your current visa expiry date today. If you're within 28 days of expiry, this is urgent. Your education provider can issue a new CoE if your study period has changed.",
+      nextText: "Student visa extensions generally need to be lodged before your current visa expires. Log into ImmiAccount and check your expiry date. If you're approaching expiry, treat this as urgent. Your education provider can usually issue a new CoE if your study period has changed. Confirm the exact requirements with a migration agent.",
       nextCTA: "See what to prepare →", secondaryCTA: null, secondaryHref: null,
     };
     if (a1.includes("conditional or unconditional offer")) return {
       emoji: "📋", title: "Ready to apply", tagline: "You have an offer — now it's about gathering the right documents.",
       gradient: "linear-gradient(135deg, #dbeafe, #bfdbfe)", accent: "#2563eb",
       nextTitle: "Gather your documents and lodge through ImmiAccount",
-      nextText: "With your CoE (Confirmation of Enrolment) in hand, the application is straightforward. You'll need proof of financial capacity, health insurance (OSHC), English language results, and a valid passport. Most student visa applications are decided within 4–6 weeks offshore.",
+      nextText: "With your CoE (Confirmation of Enrolment) in hand, you can begin gathering your supporting documents — typically proof of financial capacity, health insurance (OSHC), English language results, and a valid passport. Processing times vary and change frequently. Check current timeframes at immi.homeaffairs.gov.au.",
       nextCTA: "See what to prepare →", secondaryCTA: null, secondaryHref: null,
     };
     return {
       emoji: "🔍", title: "Still researching", tagline: "You haven't chosen an institution yet — that's the right place to start.",
       gradient: "linear-gradient(135deg, #e0f2fe, #bae6fd)", accent: "#0ea5e9",
       nextTitle: "Find an institution before you think about the visa",
-      nextText: "You cannot apply for a student visa without a Confirmation of Enrolment (CoE) from a registered Australian institution. Focus on choosing your institution and course first. Once you have your CoE, the visa application itself is relatively straightforward.",
+      nextText: "A Confirmation of Enrolment (CoE) from a registered Australian institution is generally required before you can apply for a student visa. Focus on choosing your institution and course first. Confirm the exact requirements with a migration agent or at immi.homeaffairs.gov.au.",
       nextCTA: "See what to prepare →", secondaryCTA: null, secondaryHref: null,
     };
   }
@@ -58,7 +58,7 @@ function mapToPosition(category: string, answers: (string | null)[]): PositionDa
       emoji: "🧮", title: "Ready to calculate your points", tagline: "You have your skills assessed — now let's see where your profile sits.",
       gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)", accent: "#059669",
       nextTitle: "Use the points calculator and choose your best pathway",
-      nextText: "With a positive skills assessment you can now calculate your exact points score and compare across the 189, 190 and 491 visa types. Most 189 invitations currently require 85–95+ points. If you're below 85, state nomination (190) or regional (491) pathways may be more achievable.",
+      nextText: "With a positive skills assessment you can now estimate your points score across the 189, 190 and 491 visa types. Invitation scores vary between rounds and change over time. A migration agent can advise on current invitation trends and which pathway best suits your profile.",
       nextCTA: "Calculate my points →", secondaryCTA: "Talk to a migration agent", secondaryHref: "/visa/nextstep",
     };
     if (a1.includes("In progress") || a1.includes("Not sure")) return {
@@ -81,8 +81,8 @@ function mapToPosition(category: string, answers: (string | null)[]): PositionDa
     if (a2.includes("eVisitor") || a2.includes("ETA")) return {
       emoji: "⚡", title: "You can apply online quickly", tagline: "Your passport is eligible for an electronic visa — this takes minutes.",
       gradient: "linear-gradient(135deg, #e0f2fe, #bae6fd)", accent: "#0ea5e9",
-      nextTitle: "Apply online through ImmiAccount — no agent needed",
-      nextText: "eVisitor (subclass 651) and ETA (subclass 601) applications are free or low cost, entirely online, and usually processed within minutes to 24 hours. You do not need a migration agent for this. You'll need a valid passport, a credit card for the application fee (ETA only — $20), and basic travel details.",
+      nextTitle: "Apply online through ImmiAccount — many applicants complete this without an agent",
+      nextText: "eVisitor (651) and ETA (601) applications are typically low cost and online-only, often processed quickly. Many applicants complete these without a migration agent. You'll generally need a valid passport and basic travel details. Check current fees and eligibility at immi.homeaffairs.gov.au.",
       nextCTA: "See what you need →", secondaryCTA: null, secondaryHref: null,
     };
     return {
@@ -116,28 +116,28 @@ function mapToPosition(category: string, answers: (string | null)[]): PositionDa
       emoji: "❌", title: "Working holiday visa not available", tagline: "Unfortunately working holiday visas are only available to those aged 35 or under.",
       gradient: "linear-gradient(135deg, #fee2e2, #fecaca)", accent: "#ef4444",
       nextTitle: "Consider other temporary work visa options",
-      nextText: "At over 35, working holiday visas are not available. Depending on your skills and situation, you may qualify for a Temporary Skill Shortage visa (482) if you have a job offer, or explore other temporary work pathways. A migration agent can assess your options.",
+      nextText: "Working holiday visas are generally not available to those over 35, though eligibility criteria vary by country and subclass. Other temporary work pathways may be available depending on your skills and circumstances. A migration agent can assess your specific situation.",
       nextCTA: "Find a migration agent →", secondaryCTA: null, secondaryHref: null,
     };
     if (a2.includes("second year")) return {
       emoji: "🌾", title: "Applying for your second year", tagline: "You need to have completed 88 days of specified regional work to be eligible.",
       gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)", accent: "#059669",
       nextTitle: "Confirm your regional work and apply for the second year",
-      nextText: "To be granted a second working holiday visa, you must complete 88 days (3 months) of specified work in a regional area. Your employer must provide a Regional Australia Tax Summary or payslips as evidence. Once confirmed, apply through ImmiAccount before your first visa expires.",
+      nextText: "A second working holiday visa generally requires completing a period of specified work in a regional area (typically 88 days). Evidence requirements apply. Confirm the exact current requirements at immi.homeaffairs.gov.au or with a migration agent before relying on this, as conditions can change.",
       nextCTA: "See what to prepare →", secondaryCTA: null, secondaryHref: null,
     };
     if (a2.includes("third year")) return {
       emoji: "🌾", title: "Applying for your third year", tagline: "You need 6 months of specified regional work from your second year.",
       gradient: "linear-gradient(135deg, #d1fae5, #a7f3d0)", accent: "#059669",
       nextTitle: "Complete your 6 months regional work and lodge the third year application",
-      nextText: "A third working holiday visa requires 6 months (179 days) of specified regional work completed during your second visa. The same documentation applies — payslips and employer confirmation. Lodge through ImmiAccount.",
+      nextText: "A third working holiday visa generally requires a longer period of specified regional work completed during your second visa. Confirm the exact current requirements at immi.homeaffairs.gov.au before proceeding, as conditions can change.",
       nextCTA: "See what to prepare →", secondaryCTA: null, secondaryHref: null,
     };
     return {
       emoji: "✅", title: "Ready to apply", tagline: "Working holiday visas are straightforward — this takes under an hour.",
       gradient: "linear-gradient(135deg, #ede9fe, #ddd6fe)", accent: "#7c3aed",
-      nextTitle: "Apply directly through ImmiAccount — no agent needed",
-      nextText: "Working holiday visas (417 and 462) are simple applications you can complete yourself. You'll need your passport, a credit card for the application fee (~$635), and answers to health and character questions. Most applications are decided within 24–72 hours. You do not need a migration agent for this.",
+      nextTitle: "Apply through ImmiAccount — many applicants do this without an agent",
+      nextText: "Working holiday visas (417 and 462) are generally straightforward applications. You'll typically need your passport, application fee, and answers to health and character questions. Many applicants complete these without a migration agent, but if you have any health, character or eligibility concerns, consult a MARA agent first. Check current fees and requirements at immi.homeaffairs.gov.au.",
       nextCTA: "See what you need →", secondaryCTA: null, secondaryHref: null,
     };
   }
@@ -147,14 +147,14 @@ function mapToPosition(category: string, answers: (string | null)[]): PositionDa
       emoji: "💑", title: "Partner visa pathway", tagline: "Partner visas are a two-stage process and typically take 24–48 months.",
       gradient: "linear-gradient(135deg, #fce7f3, #fbcfe8)", accent: "#db2777",
       nextTitle: "Understand the timeline before you start",
-      nextText: "Partner visas are processed in two stages: a temporary visa (820 onshore or 309 offshore) followed by a permanent visa (801 or 100). Processing times are currently 24–48 months. You must demonstrate a genuine ongoing relationship. A migration agent is strongly recommended given the complexity and processing time.",
+      nextText: "Partner visas are typically processed in two stages: a temporary visa followed by a permanent visa. Processing times are significant — currently measured in years, not months, though these change. You will need to demonstrate a genuine ongoing relationship. A migration agent is strongly recommended given the complexity involved.",
       nextCTA: "See what to prepare →", secondaryCTA: "Find a migration agent", secondaryHref: "/visa/nextstep",
     };
     if (a0.includes("Fiancé")) return {
       emoji: "💍", title: "Prospective marriage visa (300)", tagline: "You must marry within 9 months of arriving in Australia.",
       gradient: "linear-gradient(135deg, #fce7f3, #fbcfe8)", accent: "#db2777",
       nextTitle: "Apply before you travel and set a wedding date",
-      nextText: "The prospective marriage visa (subclass 300) allows you to travel to Australia and marry your partner. You must marry within 9 months of arriving. After marrying, you apply for a partner visa (820/801) to stay permanently. Processing for the 300 visa is currently 18–28 months.",
+      nextText: "The prospective marriage visa (subclass 300) generally allows you to travel to Australia and marry your partner within a specified time period after arrival. After marrying, you would typically apply for a partner visa. Processing times for the 300 visa are significant. Confirm all timeframes and requirements with a migration agent as these change.",
       nextCTA: "See what to prepare →", secondaryCTA: "Find a migration agent", secondaryHref: "/visa/nextstep",
     };
     return {
@@ -211,7 +211,18 @@ export default function VisaPosition() {
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
       <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: "4rem", paddingBottom: "4rem", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transition: "opacity 0.5s ease, transform 0.5s ease" }}>
 
-        <button onClick={() => router.push("/visa/questions")} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        <button onClick={() => router.push("/visa/questions")} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "1rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        {/* Disclaimer banner */}
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, padding: "10px 14px", marginBottom: "1.25rem", display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+          <p style={{ fontSize: 12, color: "#92400e", lineHeight: 1.6, margin: 0 }}>
+            <strong>General information only — not migration advice.</strong> Visa rules, fees and processing times change frequently. Individual circumstances vary significantly. Always confirm your situation with a{" "}
+            <a href="https://www.mara.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>MARA-registered migration agent</a>
+            {" "}or at{" "}
+            <a href="https://www.immi.homeaffairs.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>immi.homeaffairs.gov.au</a>.
+          </p>
+        </div>
+
 
         {/* Category badge */}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.8)", borderRadius: 99, padding: "4px 12px", marginBottom: "1rem", border: "1px solid rgba(255,255,255,0.9)" }}>
@@ -251,7 +262,7 @@ export default function VisaPosition() {
           See the full visa application guide →
         </button>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>This is orientation, not legal advice. Visa rules change — confirm details with a MARA agent.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8" }}>General information only — not migration advice. Confirm everything with a MARA agent or at immi.homeaffairs.gov.au.</p>
       </div>
     </main>
   );

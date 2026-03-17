@@ -132,10 +132,8 @@ const DEFAULTS: Record<string, number> = {
 
 function getViabilityLabel(baseScore: number, visaBonus: number): { label: string; color: string; bg: string; border: string; detail: string } {
   const total = baseScore + visaBonus;
-  if (total >= 90) return { label: "✅ Strong", color: "#059669", bg: "#f0fdf4", border: "#bbf7d0", detail: "Competitive for invitation in most rounds." };
-  if (total >= 80) return { label: "⚠ Possible", color: "#d97706", bg: "#fffbeb", border: "#fde68a", detail: "May receive invitation — monitor SkillSelect closely." };
-  if (total >= 65) return { label: "🟡 Eligible", color: "#b45309", bg: "#fefce8", border: "#fef08a", detail: "Meets minimum but invitations are unlikely at this score." };
-  return { label: "❌ Below minimum", color: "#ef4444", bg: "#fef2f2", border: "#fecaca", detail: "Below the 65-point minimum to submit an EOI." };
+  if (total >= 65) return { label: `${total} pts`, color: "#059669", bg: "#f0fdf4", border: "#bbf7d0", detail: "Meets the minimum 65 points to submit an EOI." };
+  return { label: `${total} pts`, color: "#ef4444", bg: "#fef2f2", border: "#fecaca", detail: "Below the 65-point minimum to submit an EOI. Confirm with a migration agent." };
 }
 
 export default function VisaPointsCalculator() {
@@ -162,7 +160,18 @@ export default function VisaPointsCalculator() {
 
       <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: "4rem", paddingBottom: "4rem" }}>
 
-        <button onClick={() => router.back()} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        <button onClick={() => router.back()} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "1rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
+        {/* Disclaimer banner */}
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, padding: "10px 14px", marginBottom: "1.25rem", display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+          <p style={{ fontSize: 12, color: "#92400e", lineHeight: 1.6, margin: 0 }}>
+            <strong>General information only — not migration advice.</strong> Points scores are estimates. Invitation cutoffs vary between rounds and are not guaranteed. Confirm your exact points and pathway with a{" "}
+            <a href="https://www.mara.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>MARA-registered migration agent</a>
+            {" "}or at{" "}
+            <a href="https://www.immi.homeaffairs.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309", textDecoration: "underline", textUnderlineOffset: 3 }}>immi.homeaffairs.gov.au</a>.
+          </p>
+        </div>
+
 
         {/* Header */}
         <div style={{ marginBottom: "1.5rem" }}>
@@ -191,7 +200,7 @@ export default function VisaPointsCalculator() {
           <div style={{ height: 8, background: "rgba(255,255,255,0.4)", borderRadius: 99, overflow: "hidden", marginBottom: 6 }}>
             <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 99, transition: "width 0.4s ease, background 0.3s ease" }} />
           </div>
-          <p style={{ fontSize: 12, color: "#6d28d9", margin: 0 }}>Minimum 65 to submit EOI · Most 189 invitations: 85–95+</p>
+          <p style={{ fontSize: 12, color: "#6d28d9", margin: 0 }}>Minimum 65 to submit an EOI · Invitation cutoffs vary each round — this is an estimate only</p>
         </div>
 
         {/* Visa pathway comparison */}
@@ -199,9 +208,9 @@ export default function VisaPointsCalculator() {
           <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.75rem" }}>How your score compares across visa types</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {[
-              { label: "189 Skilled Independent", score: score189, bonus: 0, viability: v189, note: "No sponsor needed. Highest competition." },
-              { label: "190 State Nominated", score: score190, bonus: 5, viability: v190, note: "+5 pts. Must commit to state for 2 years." },
-              { label: "491 Regional (Provisional)", score: score491, bonus: 15, viability: v491, note: "+15 pts. 5yr provisional → 191 permanent. Regional living required." },
+              { label: "189 Skilled Independent", score: score189, bonus: 0, viability: v189, note: "No sponsor needed. Invitation cutoffs vary each round — check SkillSelect for current data." },
+              { label: "190 State Nominated", score: score190, bonus: 5, viability: v190, note: "+5 pts from state nomination. State commitment required. Check current invitation data on SkillSelect." },
+              { label: "491 Regional (Provisional)", score: score491, bonus: 15, viability: v491, note: "+15 pts from nomination. Provisional visa with pathway to permanence. Regional living required." },
             ].map(v => (
               <div key={v.label} style={{ background: v.viability.bg, borderRadius: 14, padding: "0.875rem 1rem", border: `1px solid ${v.viability.border}` }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
@@ -212,7 +221,7 @@ export default function VisaPointsCalculator() {
                   </div>
                 </div>
                 <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 3px" }}>{v.note}</p>
-                <p style={{ fontSize: 11, fontWeight: 600, color: v.viability.color, margin: 0 }}>Total: {v.score} pts — {v.viability.detail}</p>
+                <p style={{ fontSize: 11, color: "#64748b", margin: 0 }}>Total with bonus: {v.score} pts · {v.viability.detail}</p>
               </div>
             ))}
           </div>
@@ -263,9 +272,9 @@ export default function VisaPointsCalculator() {
 
         {/* Disclaimer + CTA */}
         <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 16, padding: "1rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)", marginBottom: "1rem" }}>
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>
-            ✦ Estimates only. Points tables are updated periodically by the Department of Home Affairs. Confirm your exact score with a MARA-registered migration agent.
-          </p>
+          <div style={{ background: "#fffbeb", borderRadius: 10, padding: "8px 12px", border: "1px solid #fde68a" }}>
+            <p style={{ fontSize: 12, color: "#92400e", margin: 0 }}>✦ Estimates only. Points tables change — confirm your exact score, occupation eligibility and pathway with a <a href="https://www.mara.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#b45309" }}>MARA-registered migration agent</a>.</p>
+          </div>
         </div>
 
         <a href="/visa/nextstep" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "14px", borderRadius: 16, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontSize: 15, fontWeight: 600, textDecoration: "none", marginBottom: 10, boxShadow: "0 4px 20px rgba(99,102,241,0.3)" }}>

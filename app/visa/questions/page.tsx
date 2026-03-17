@@ -31,7 +31,7 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       options: ["Not yet — still researching institutions", "Yes — I have a conditional or unconditional offer", "I'm already enrolled and need to extend my visa"],
     },
     {
-      key: "location", text: "Where are you applying from?", subtext: "Applying onshore vs offshore changes your process significantly.", emoji: "📍", type: "list",
+      key: "location", text: "Where are you applying from?", subtext: "Applying onshore vs offshore typically involves different processes — confirm your options with a migration agent.", emoji: "📍", type: "list",
       options: ["Offshore — applying from outside Australia", "Onshore — already in Australia on another visa"],
     },
   ],
@@ -73,7 +73,7 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       options: ["Short-term stream (2yr visa, occupation on STSOL)", "Medium-term stream (4yr visa, occupation on MLTSSL)", "Labour agreement stream (special arrangement)", "Not sure — I don't know which list my occupation is on"],
     },
     {
-      key: "location", text: "Where are you currently located?", subtext: "Onshore applicants may have additional bridging visa options.", emoji: "📍", type: "list",
+      key: "location", text: "Where are you currently located?", subtext: "Your current visa status may affect your options — a migration agent can advise on your specific situation.", emoji: "📍", type: "list",
       options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
     },
   ],
@@ -101,7 +101,7 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       options: ["Australian citizen", "Australian permanent resident", "Eligible New Zealand citizen", "Not sure of their exact status"],
     },
     {
-      key: "location", text: "Where are you currently located?", subtext: "Onshore partner visas (820) and offshore partner visas (309) are different applications.", emoji: "📍", type: "list",
+      key: "location", text: "Where are you currently located?", subtext: "Your location generally affects which application process applies — confirm with a migration agent.", emoji: "📍", type: "list",
       options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
     },
   ],
@@ -243,7 +243,7 @@ export default function VisaQuestions() {
           )}
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>No sign-up. No advice. No pressure.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: "1.5rem" }}>General information only — not migration advice. Confirm your situation with a MARA agent.</p>
       </div>
     </main>
   );
