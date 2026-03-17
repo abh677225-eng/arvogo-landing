@@ -51,7 +51,7 @@ const STEPS: Step[] = [
     detail: "An ABN (Australian Business Number) is a unique 11-digit number that identifies your business. You need it to:\n\n• Invoice clients — clients can withhold 47% of payments if you don't have one\n• Register for GST\n• Register a business name\n• Claim business-related tax deductions\n\nRegistering is free and takes about 15 minutes online at abr.gov.au. You'll need your TFN (Tax File Number) and some basic details about your business.\n\nYou can apply as a sole trader using your personal TFN, or as a company after you've registered with ASIC.",
     timeframe: "15 minutes online",
     cost: "Free",
-    cta: { label: "Register at abr.gov.au ↗", href: "https://www.abr.gov.au/business-super-funds-charities/applying-for-an-abn" },
+    cta: { label: "Register at abr.gov.au ↗", href: "https://www.abr.gov.au" },
   },
   {
     number: 4,
@@ -71,7 +71,7 @@ const STEPS: Step[] = [
     detail: "GST (Goods and Services Tax) is a 10% tax on most goods and services. You must register if:\n\n• Your annual revenue is (or is expected to be) over $75,000\n• You provide taxi or ride-sharing services (any revenue level)\n• You want to claim GST credits on business purchases\n\nOnce registered, you charge 10% GST on your invoices, collect it from clients, and pay it to the ATO via a quarterly BAS (Business Activity Statement). You can also claim back GST you've paid on business expenses.\n\nBelow $75k you can register voluntarily — useful if your clients are GST-registered businesses and you want to claim credits.\n\nRegister through your myGov account or the ATO business portal.",
     timeframe: "1–2 days",
     cost: "Free",
-    cta: { label: "Register via ato.gov.au ↗", href: "https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst" },
+    cta: { label: "Register via ato.gov.au ↗", href: "https://www.ato.gov.au" },
   },
   {
     number: 6,

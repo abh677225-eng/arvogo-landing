@@ -69,7 +69,7 @@ const GOV_REGISTRATIONS = [
     status: "required",
     cost: "Free",
     when: "Before you invoice anyone",
-    url: "https://www.abr.gov.au/business-super-funds-charities/applying-for-an-abn",
+    url: "https://www.abr.gov.au",
     desc: "Every business needs one. Apply online in 15 minutes.",
   },
   {
@@ -77,7 +77,7 @@ const GOV_REGISTRATIONS = [
     status: "if-over-75k",
     cost: "Free",
     when: "When your revenue exceeds or is expected to exceed $75,000/year",
-    url: "https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst",
+    url: "https://www.ato.gov.au",
     desc: "Mandatory over $75k/year. You can register voluntarily before this.",
   },
   {
@@ -85,7 +85,7 @@ const GOV_REGISTRATIONS = [
     status: "recommended",
     cost: "$44/year or $102 for 3 years",
     when: "If trading under a name that isn't your own legal name",
-    url: "https://www.asic.gov.au/for-business/registering-a-business-name",
+    url: "https://www.asic.gov.au",
     desc: "Register via ASIC. Required before you can use a trading name.",
   },
   {
@@ -93,7 +93,7 @@ const GOV_REGISTRATIONS = [
     status: "if-company",
     cost: "$576 ASIC fee",
     when: "Only if you're setting up a Pty Ltd company",
-    url: "https://www.asic.gov.au/for-business/registrations/register-a-company",
+    url: "https://www.asic.gov.au",
     desc: "Gives you limited liability protection and a separate legal entity.",
   },
   {
@@ -101,31 +101,31 @@ const GOV_REGISTRATIONS = [
     status: "required",
     cost: "Free",
     when: "If operating as a company or partnership",
-    url: "https://www.ato.gov.au/businesses-and-organisations/starting-registering-or-closing-a-business/register-for-a-business-tax-registration",
+    url: "https://www.ato.gov.au",
     desc: "Sole traders use their personal TFN. Companies need a separate one.",
   },
 ];
 
 // ── STATE LICENCE CHECKERS ─────────────────────────────────
 const STATE_LICENCES: Record<StateCode, { name: string; url: string }> = {
-  VIC: { name: "Business Victoria licence finder", url: "https://business.vic.gov.au/business-information/licences-and-permits" },
-  NSW: { name: "NSW licence and permit finder", url: "https://www.nsw.gov.au/business-and-economy/running-a-business/licences-permits-and-certifications" },
-  QLD: { name: "Business Queensland licence finder", url: "https://www.business.qld.gov.au/running-business/licensing" },
-  SA:  { name: "SA Business Licence Information Service", url: "https://www.sa.gov.au/topics/business-and-trade/licences-and-registrations" },
-  WA:  { name: "Business licence finder WA", url: "https://www.wa.gov.au/organisation/small-business-development-corporation/licences-and-permits" },
-  TAS: { name: "Business Tasmania licence checker", url: "https://www.business.tas.gov.au/starting_a_business/licences_and_permits" },
-  ACT: { name: "Access Canberra licence search", url: "https://www.accesscanberra.act.gov.au/s/licensing" },
-  NT:  { name: "NT business licence information", url: "https://nt.gov.au/industry/business-and-industry/licences-and-registrations" },
+  VIC: { name: "Business Victoria licence finder", url: "https://business.vic.gov.au" },
+  NSW: { name: "NSW licence and permit finder", url: "https://www.nsw.gov.au" },
+  QLD: { name: "Business Queensland licence finder", url: "https://www.business.qld.gov.au" },
+  SA:  { name: "SA Business Licence Information Service", url: "https://www.sa.gov.au" },
+  WA:  { name: "Business licence finder WA", url: "https://www.wa.gov.au" },
+  TAS: { name: "Business Tasmania licence checker", url: "https://www.business.tas.gov.au" },
+  ACT: { name: "Access Canberra licence search", url: "https://www.accesscanberra.act.gov.au" },
+  NT:  { name: "NT business licence information", url: "https://nt.gov.au" },
 };
 
 // ── ALREADY TRADING CHECKLIST ──────────────────────────────
 const TRADING_CHECKLIST = [
-  { emoji: "💰", title: "GST registration", desc: "Are you over $75k revenue? You must be registered.", action: "Check at ato.gov.au", url: "https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst", urgent: true },
+  { emoji: "💰", title: "GST registration", desc: "Are you over $75k revenue? You must be registered.", action: "Check at ato.gov.au", url: "https://www.ato.gov.au", urgent: true },
   { emoji: "🏦", title: "Separate business bank account", desc: "Mixing personal and business funds causes tax and legal problems.", action: "Open a business account", url: null, urgent: true },
   { emoji: "🛡️", title: "Public liability insurance", desc: "Most client contracts require it. One incident without it is catastrophic.", action: "Get a quote from an insurance broker", url: null, urgent: true },
   { emoji: "📋", title: "Written contracts with clients", desc: "Verbal agreements are unenforceable. A simple contract protects both parties.", action: "Talk to a business lawyer", url: null, urgent: false },
   { emoji: "🧮", title: "Bookkeeping and BAS lodgement", desc: "If you're registered for GST, BAS is due quarterly. Penalties apply for late lodgement.", action: "Talk to an accountant", url: null, urgent: false },
-  { emoji: "📝", title: "Superannuation for yourself", desc: "Sole traders are not required to pay themselves super — but should consider it.", action: "Check ato.gov.au for options", url: "https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/growing-and-keeping-track-of-your-super/self-employed-super", urgent: false },
+  { emoji: "📝", title: "Superannuation for yourself", desc: "Sole traders are not required to pay themselves super — but should consider it.", action: "Check ato.gov.au for options", url: "https://www.ato.gov.au", urgent: false },
 ];
 
 // ── PROFESSIONALS ──────────────────────────────────────────
@@ -313,12 +313,12 @@ export default function BusinessNextStep() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {GOV_REGISTRATIONS.map(reg => {
-                const statusCfg = ({
-  required:      { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0", label: "Required" },
-  "if-over-75k": { bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "If revenue >$75k" },
-  recommended:   { bg: "#eef2ff", color: "#6366f1", border: "#c7d2fe", label: "Recommended" },
-  "if-company":  { bg: "#fef2f2", color: "#ef4444", border: "#fecaca", label: "If company only" },
-} as Record<string, { bg: string; color: string; border: string; label: string }>)[reg.status] ?? { bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0", label: reg.status };
+                const statusCfg = {
+                  required:     { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0", label: "Required" },
+                  "if-over-75k":{ bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "If revenue >$75k" },
+                  recommended:  { bg: "#eef2ff", color: "#6366f1", border: "#c7d2fe", label: "Recommended" },
+                  "if-company": { bg: "#fef2f2", color: "#ef4444", border: "#fecaca", label: "If company only" },
+                }[reg.status];
                 return (
                   <div key={reg.name} style={{ background: "#f8fafc", borderRadius: 12, padding: "10px 14px", border: "1px solid #f1f5f9" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>

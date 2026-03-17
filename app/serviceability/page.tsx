@@ -58,10 +58,10 @@ const STAMP_DUTY_DATA: Record<StateCode, { exemptThreshold: number | null; conce
 };
 
 const FEDERAL_SCHEMES_DATA = [
-  { emoji: "🏦", name: "5% Deposit Scheme", headline: "Buy with 5% deposit — no LMI", detail: "Government guarantees 15% of your loan. Unlimited places, no income caps (from Oct 2025). Owner-occupier only.", url: "https://www.housingaustralia.gov.au/support-buy-home/first-home-guarantee" },
-  { emoji: "👨‍👧", name: "Family Home Guarantee", headline: "Single parents: 2% deposit, no LMI", detail: "For single parents with at least one dependent. Government guarantees 18% of your loan.", url: "https://www.housingaustralia.gov.au/support-buy-home/family-home-guarantee" },
-  { emoji: "💼", name: "First Home Super Saver", headline: "Save your deposit in super", detail: "Withdraw up to $50k in voluntary super contributions for your deposit. Taxed at 15% instead of your marginal rate.", url: "https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/withdrawing-and-using-your-super/first-home-super-saver-scheme" },
-  { emoji: "🤝", name: "Help to Buy", headline: "Government co-buys with you", detail: "Government contributes up to 40% of a new home's price (30% for existing). 10,000 places/year. Income caps apply.", url: "https://www.housingaustralia.gov.au/support-buy-home/help-to-buy" },
+  { emoji: "🏦", name: "5% Deposit Scheme", headline: "Buy with 5% deposit — no LMI", detail: "Government guarantees 15% of your loan. Unlimited places, no income caps (from Oct 2025). Owner-occupier only.", url: "https://www.housingaustralia.gov.au" },
+  { emoji: "👨‍👧", name: "Family Home Guarantee", headline: "Single parents: 2% deposit, no LMI", detail: "For single parents with at least one dependent. Government guarantees 18% of your loan.", url: "https://www.housingaustralia.gov.au" },
+  { emoji: "💼", name: "First Home Super Saver", headline: "Save your deposit in super", detail: "Withdraw up to $50k in voluntary super contributions for your deposit. Taxed at 15% instead of your marginal rate.", url: "https://www.ato.gov.au" },
+  { emoji: "🤝", name: "Help to Buy", headline: "Government co-buys with you", detail: "Government contributes up to 40% of a new home's price (30% for existing). 10,000 places/year. Income caps apply.", url: "https://www.housingaustralia.gov.au" },
 ];
 
 const INCOME_TYPES = [

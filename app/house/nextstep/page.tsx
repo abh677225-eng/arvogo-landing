@@ -22,37 +22,21 @@ function mapAnswersToPosition(answers: (string | null)[]): PositionKey {
   return "browsing";
 }
 
-// ── PAGE HEADERS BY POSITION ───────────────────────────────
-const PAGE_HEADERS: Record<PositionKey, { heading: string; subtext: string }> = {
-  browsing: {
-    heading: "Where to start 🔎",
-    subtext: "Browse listings to get a feel for the market. No need to talk to anyone yet — just explore.",
-  },
-  searching: {
-    heading: "Resources for your search 🏘️",
-    subtext: "Listing sites, a borrowing capacity check, and mortgage brokers to get you pre-approved.",
-  },
-  buying: {
-    heading: "Everything you need right now ⚡",
-    subtext: "Listing sites, your borrowing capacity, the right professionals, and your first home buyer benefits — all in one place.",
-  },
-};
-
-// ── FIRST HOME BENEFITS DATA ───────────────────────────────
+// ── FIRST HOME BENEFITS ────────────────────────────────────
 // MAINTENANCE: Last verified March 2026
 
-const FHOG_DATA: Record<StateCode, { amount: number; threshold: number | null; newOnly: boolean; note: string; expiry?: string }> = {
+const FHOG: Record<StateCode, { amount: number; threshold: number | null; newOnly: boolean; note: string; expiry?: string }> = {
   VIC: { amount: 10000, threshold: 750000, newOnly: true, note: "New homes only. Must move in within 12 months." },
   NSW: { amount: 10000, threshold: 750000, newOnly: true, note: "New homes only. Must move in within 12 months." },
   QLD: { amount: 30000, threshold: 750000, newOnly: true, note: "Highest mainland grant. New homes only." },
   SA:  { amount: 15000, threshold: null,   newOnly: true, note: "No price cap — any value new home qualifies." },
   WA:  { amount: 10000, threshold: 750000, newOnly: false, note: "Applies to both new and established homes." },
   TAS: { amount: 30000, threshold: null,   newOnly: true,  note: "No price cap.", expiry: "June 2026" },
-  ACT: { amount: 0,     threshold: null,   newOnly: false, note: "No FHOG in ACT — Home Buyer Concession Scheme instead." },
+  ACT: { amount: 0,     threshold: null,   newOnly: false, note: "No FHOG in ACT — see Home Buyer Concession Scheme." },
   NT:  { amount: 50000, threshold: 750000, newOnly: true,  note: "HomeGrown Grant — highest in Australia.", expiry: "September 2026" },
 };
 
-const STAMP_DUTY_DATA: Record<StateCode, { exemptThreshold: number | null; concessionThreshold: number | null; note: string; expiry?: string }> = {
+const STAMP_DUTY: Record<StateCode, { exemptThreshold: number | null; concessionThreshold: number | null; note: string; expiry?: string }> = {
   VIC: { exemptThreshold: 600000, concessionThreshold: 750000, note: "Full exemption under $600k. Concession $600k–$750k." },
   NSW: { exemptThreshold: 800000, concessionThreshold: 1000000, note: "Full exemption under $800k. Concession $800k–$1M." },
   QLD: { exemptThreshold: 700000, concessionThreshold: 800000, note: "New homes: full exemption under $700k. Concession to $800k." },
@@ -64,20 +48,19 @@ const STAMP_DUTY_DATA: Record<StateCode, { exemptThreshold: number | null; conce
 };
 
 const FEDERAL_SCHEMES = [
-  { emoji: "🏦", name: "5% Deposit Scheme", headline: "Buy with 5% deposit — no LMI", detail: "Government guarantees 15% of your loan. Unlimited places, no income caps (from Oct 2025). Owner-occupier only.", url: "https://www.housingaustralia.gov.au/support-buy-home/first-home-guarantee" },
-  { emoji: "👨‍👧", name: "Family Home Guarantee", headline: "Single parents: 2% deposit, no LMI", detail: "For single parents with at least one dependent. Government guarantees 18% of your loan.", url: "https://www.housingaustralia.gov.au/support-buy-home/family-home-guarantee" },
-  { emoji: "💼", name: "First Home Super Saver", headline: "Save your deposit in super", detail: "Withdraw up to $50k in voluntary super contributions for your deposit. Taxed at 15% instead of your marginal rate.", url: "https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/withdrawing-and-using-your-super/first-home-super-saver-scheme" },
-  { emoji: "🤝", name: "Help to Buy", headline: "Government co-buys with you", detail: "Government contributes up to 40% of a new home's price (30% for existing). 10,000 places/year. Income caps apply.", url: "https://www.housingaustralia.gov.au/support-buy-home/help-to-buy" },
+  { emoji: "🏦", name: "5% Deposit Scheme", headline: "Buy with 5% deposit — no LMI", detail: "Government guarantees 15% of your loan. Unlimited places, no income caps (from Oct 2025). Owner-occupier only.", url: "https://www.housingaustralia.gov.au" },
+  { emoji: "👨‍👧", name: "Family Home Guarantee", headline: "Single parents: 2% deposit, no LMI", detail: "For single parents with at least one dependent. Government guarantees 18% of your loan.", url: "https://www.housingaustralia.gov.au" },
+  { emoji: "💼", name: "First Home Super Saver", headline: "Save your deposit in super", detail: "Withdraw up to $50k in voluntary super contributions for your deposit. Taxed at 15% instead of your marginal rate.", url: "https://www.ato.gov.au" },
+  { emoji: "🤝", name: "Help to Buy", headline: "Government co-buys with you", detail: "Government contributes up to 40% of a new home's price. 10,000 places/year. Income caps apply.", url: "https://www.housingaustralia.gov.au" },
 ];
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-AU"); }
 
-// ── FIRST HOME BENEFITS COMPONENT ─────────────────────────
-function FirstHomeBenefits({ state }: { state: StateCode }) {
+function FirstHomeBenefits({ state }: { state: StateCode | null }) {
   const [tab, setTab] = useState<"state" | "federal">("state");
   const [expandedFederal, setExpandedFederal] = useState<string | null>(null);
-  const fhog = FHOG_DATA[state];
-  const duty = STAMP_DUTY_DATA[state];
+  const fhog = state ? FHOG[state] : null;
+  const duty = state ? STAMP_DUTY[state] : null;
 
   return (
     <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", boxShadow: "0 4px 24px rgba(99,102,241,0.06)" }}>
@@ -85,35 +68,38 @@ function FirstHomeBenefits({ state }: { state: StateCode }) {
         <div style={{ width: 38, height: 38, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #d1fae5, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎁</div>
         <div>
           <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>First home buyer benefits</p>
-          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Grants, concessions and schemes for {state}</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>{state ? `Grants, concessions and schemes for ${state}` : "Grants, concessions and federal schemes"}</p>
         </div>
       </div>
       <div style={{ display: "flex", gap: 6, marginBottom: "1rem" }}>
-        {[{ key: "state", label: `${state} benefits` }, { key: "federal", label: "Federal schemes" }].map(t => (
+        {[{ key: "state", label: state ? `${state} benefits` : "State benefits" }, { key: "federal", label: "Federal schemes" }].map(t => (
           <button key={t.key} onClick={() => setTab(t.key as "state" | "federal")} style={{ flex: 1, padding: "8px", borderRadius: 10, fontSize: 12, fontWeight: 600, background: tab === t.key ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f8fafc", border: tab === t.key ? "none" : "1.5px solid #e2e8f0", color: tab === t.key ? "#fff" : "#64748b", cursor: "pointer", fontFamily: "inherit", boxShadow: tab === t.key ? "0 2px 8px rgba(99,102,241,0.25)" : "none", transition: "all 0.15s ease" }}>{t.label}</button>
         ))}
       </div>
       {tab === "state" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ borderRadius: 14, background: fhog.amount > 0 ? "linear-gradient(135deg, #d1fae5, #a7f3d0)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: fhog.amount > 0 ? "#065f46" : "#94a3b8", margin: 0 }}>First Home Owner Grant</p>
-              {fhog.amount > 0 ? <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#059669", color: "#fff" }}>{fmt(fhog.amount)}</span> : <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>}
-            </div>
-            <p style={{ fontSize: 12, color: fhog.amount > 0 ? "#047857" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{fhog.note}</p>
-            {fhog.threshold && <p style={{ fontSize: 11, color: "#059669", margin: 0 }}>Price cap: {fmt(fhog.threshold)}</p>}
-            {fhog.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {fhog.expiry}</p>}
+        !state ? (
+          <div style={{ background: "#f8fafc", borderRadius: 12, padding: "1rem", textAlign: "center", border: "1px solid #f1f5f9" }}>
+            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Complete the questions to see your state-specific benefits.</p>
           </div>
-          <div style={{ borderRadius: 14, background: duty.exemptThreshold ? "linear-gradient(135deg, #dbeafe, #bfdbfe)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: 0 }}>Stamp duty concession</p>
-              {duty.exemptThreshold ? <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#1d4ed8", color: "#fff" }}>Available ✓</span> : <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>}
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ borderRadius: 14, background: fhog && fhog.amount > 0 ? "linear-gradient(135deg, #d1fae5, #a7f3d0)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: fhog && fhog.amount > 0 ? "#065f46" : "#94a3b8", margin: 0 }}>First Home Owner Grant</p>
+                {fhog && fhog.amount > 0 ? <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#059669", color: "#fff" }}>{fmt(fhog.amount)}</span> : <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>}
+              </div>
+              {fhog && <><p style={{ fontSize: 12, color: fhog.amount > 0 ? "#047857" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{fhog.note}</p>{fhog.threshold && <p style={{ fontSize: 11, color: "#059669", margin: 0 }}>Price cap: {fmt(fhog.threshold)}</p>}{fhog.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {fhog.expiry}</p>}</>}
             </div>
-            <p style={{ fontSize: 12, color: duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{duty.note}</p>
-            {duty.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {duty.expiry}</p>}
+            <div style={{ borderRadius: 14, background: duty && duty.exemptThreshold ? "linear-gradient(135deg, #dbeafe, #bfdbfe)" : "#f8fafc", border: "1px solid rgba(255,255,255,0.6)", padding: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: duty && duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: 0 }}>Stamp duty concession</p>
+                {duty && duty.exemptThreshold ? <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "#1d4ed8", color: "#fff" }}>Available ✓</span> : <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#f1f5f9", color: "#94a3b8" }}>Not available</span>}
+              </div>
+              {duty && <><p style={{ fontSize: 12, color: duty.exemptThreshold ? "#1e40af" : "#94a3b8", margin: "0 0 3px", lineHeight: 1.5 }}>{duty.note}</p>{duty.expiry && <p style={{ fontSize: 11, color: "#d97706", margin: "4px 0 0", fontWeight: 600 }}>⏰ Expires {duty.expiry}</p>}</>}
+            </div>
+            <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>✦ Confirm exact eligibility with your broker or state revenue office.</p>
           </div>
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>✦ Confirm exact eligibility with your broker or state revenue office.</p>
-        </div>
+        )
       )}
       {tab === "federal" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -136,28 +122,27 @@ function FirstHomeBenefits({ state }: { state: StateCode }) {
 
 // ── PROFESSIONALS ──────────────────────────────────────────
 
-const CATEGORY_INFO: Record<CategoryKey, {
-  emoji: string; title: string; what: string; when: string;
-  cost: string; costType: "free" | "paid";
-  status: "essential" | "optional" | "recommended";
-  statusNote: string; showFor: PositionKey[];
-}> = {
-  broker:          { emoji: "🏦", title: "Mortgage broker",          what: "Finds you the right loan from dozens of lenders and handles the application on your behalf.", when: "Before you start seriously looking. Pre-approval lets you move fast.", cost: "Free — paid by the lender, not you", costType: "free", status: "essential", statusNote: "You'll need one to get a loan", showFor: ["searching", "buying"] },
-  "buyers-agent":  { emoji: "🔍", title: "Buyers agent",             what: "Searches, evaluates and bids on properties on your behalf. Works for you, not the vendor.", when: "Once you know your budget and target area. Particularly valuable at auction.", cost: "Typically $8,000–$20,000 or 1–2.5% · Paid by you", costType: "paid", status: "optional", statusNote: "Many buyers find homes without one", showFor: ["buying"] },
-  conveyancer:     { emoji: "📋", title: "Conveyancer",              what: "Handles the legal transfer of property — contracts, title checks, and settlement.", when: "Before you exchange contracts. Essential, not optional.", cost: "Typically $800–$2,000 · Paid by you", costType: "paid", status: "essential", statusNote: "Legally required to settle", showFor: ["buying"] },
-  "building-pest": { emoji: "🔬", title: "Building & pest inspector", what: "Inspects the property for structural issues, defects, and pest activity before you commit.", when: "Before you exchange contracts — problems found after are your problem.", cost: "Typically $400–$800 · Paid by you", costType: "paid", status: "recommended", statusNote: "Skipping this is a costly risk", showFor: ["buying"] },
+const INTROS: Record<PositionKey, { heading: string; subtext: string }> = {
+  browsing: { heading: "Where to start looking 🔎", subtext: "You don't need to talk to anyone yet. Browse the listing sites below to get a feel for the market." },
+  searching: { heading: "Get your finances sorted first 🏦", subtext: "Before you go any further, talk to a mortgage broker. Pre-approval means you can move fast when the right property comes up." },
+  buying: { heading: "The people you need right now ⚡", subtext: "Select the professionals you'd like an introduction to — fill in your details once and we'll handle the rest." },
 };
 
-// Listing sites — varies by position
-const LISTING_SITES_SHORT = [
-  { name: "realestate.com.au", emoji: "🏘️", desc: "Australia's largest listing site", url: "https://www.realestate.com.au" },
-  { name: "domain.com.au",     emoji: "🏡", desc: "Strong coverage + suburb insights", url: "https://www.domain.com.au" },
+const CATEGORY_INFO: Record<CategoryKey, { emoji: string; title: string; what: string; when: string; cost: string; costType: "free" | "paid"; status: "essential" | "optional" | "recommended"; statusNote: string; showFor: PositionKey[] }> = {
+  broker:         { emoji: "🏦", title: "Mortgage broker",         what: "Finds you the right loan from dozens of lenders and handles the application on your behalf.", when: "Before you start seriously looking. Pre-approval lets you move fast.", cost: "Free — paid by the lender, not you", costType: "free", status: "essential", statusNote: "You'll need one to get a loan", showFor: ["searching", "buying"] },
+  "buyers-agent": { emoji: "🔍", title: "Buyers agent",            what: "Searches, evaluates and bids on properties on your behalf. Works for you, not the vendor.", when: "Once you know your budget and target area. Valuable at auction.", cost: "Typically $8,000–$20,000 or 1–2.5% · Paid by you", costType: "paid", status: "optional", statusNote: "Many buyers find homes without one", showFor: ["buying"] },
+  conveyancer:    { emoji: "📋", title: "Conveyancer",             what: "Handles the legal transfer of property — contracts, title checks, and settlement.", when: "Before you exchange contracts. Essential, not optional.", cost: "Typically $800–$2,000 · Paid by you", costType: "paid", status: "essential", statusNote: "Legally required to settle", showFor: ["buying"] },
+  "building-pest":{ emoji: "🔬", title: "Building & pest inspector", what: "Inspects the property for structural issues, defects, and pest activity before you commit.", when: "Before you exchange contracts — problems found after are your problem.", cost: "Typically $400–$800 · Paid by you", costType: "paid", status: "recommended", statusNote: "Skipping this is a costly risk", showFor: ["buying"] },
+};
+
+const LISTING_SITES_ALL = [
+  { name: "realestate.com.au", emoji: "🏘️", desc: "Australia's largest property listing site", url: "https://www.realestate.com.au" },
+  { name: "domain.com.au", emoji: "🏡", desc: "Strong coverage + suburb research tools", url: "https://www.domain.com.au" },
+  { name: "homely.com.au", emoji: "🗺️", desc: "Neighbourhood insights from locals", url: "https://www.homely.com.au" },
+  { name: "onthehouse.com.au", emoji: "📊", desc: "Sold price history — avoid overpaying", url: "https://www.onthehouse.com.au" },
 ];
-const LISTING_SITES_FULL = [
-  ...LISTING_SITES_SHORT,
-  { name: "homely.com.au",      emoji: "🗺️", desc: "Neighbourhood insights from locals", url: "https://www.homely.com.au" },
-  { name: "onthehouse.com.au",  emoji: "📊", desc: "Sold price history — avoid overpaying", url: "https://www.onthehouse.com.au" },
-];
+
+type LeadForm = { name: string; email: string; phone: string; message: string };
 
 function StatusBadge({ status }: { status: "essential" | "optional" | "recommended" }) {
   const cfg = { essential: { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0", label: "✓ Essential" }, optional: { bg: "#f8fafc", color: "#64748b", border: "#e2e8f0", label: "Optional" }, recommended: { bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "⚠ Recommended" } }[status];
@@ -168,8 +153,6 @@ function CostBadge({ cost, costType }: { cost: string; costType: "free" | "paid"
   return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: costType === "free" ? "#f0fdf4" : "#fff7ed", border: `1px solid ${costType === "free" ? "#bbf7d0" : "#fed7aa"}`, borderRadius: 99, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: costType === "free" ? "#16a34a" : "#ea580c" }}>{costType === "free" ? "✓" : "💰"} {cost}</span>;
 }
 
-type LeadForm = { name: string; email: string; phone: string; message: string };
-
 export default function HouseNextStep() {
   const router = useRouter();
   const [position, setPosition] = useState<PositionKey>("browsing");
@@ -178,10 +161,7 @@ export default function HouseNextStep() {
   const [visible, setVisible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [message, setMessage] = useState("");
+  const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [phone, setPhone] = useState(""); const [message, setMessage] = useState("");
   const [selected, setSelected] = useState<Set<CategoryKey>>(new Set());
 
   useEffect(() => {
@@ -197,10 +177,9 @@ export default function HouseNextStep() {
     setTimeout(() => setVisible(true), 100);
   }, []);
 
-  const header = PAGE_HEADERS[position];
+  const intro = INTROS[position];
   const visibleCategories = (Object.keys(CATEGORY_INFO) as CategoryKey[]).filter(k => CATEGORY_INFO[k].showFor.includes(position));
-  const showProfessionals = visibleCategories.length > 0;
-  const listingSites = position === "buying" ? LISTING_SITES_FULL : LISTING_SITES_SHORT;
+  const listingSites = position === "buying" ? LISTING_SITES_ALL : LISTING_SITES_ALL.slice(0, 2);
   const isValid = name.trim() && email.trim() && selected.size > 0;
 
   function toggleCategory(key: CategoryKey) {
@@ -220,67 +199,39 @@ export default function HouseNextStep() {
   return (
     <main style={{ minHeight: "100vh", background: meshBg, fontFamily: "'DM Sans', system-ui, sans-serif", padding: "0 1rem" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
-
       <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: "4rem", paddingBottom: "4rem", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)", transition: "opacity 0.5s ease, transform 0.5s ease" }}>
 
         <button onClick={() => router.push("/house/position")} style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer", fontFamily: "inherit", marginBottom: "2rem", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>← Back</button>
 
-        {/* Page header */}
+        {/* Intro */}
         <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.5rem", marginBottom: "1.25rem", boxShadow: "0 4px 24px rgba(99,102,241,0.06)" }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
-            {state ? `Resources for ${state}` : "Resources"}
-          </p>
-          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(1.4rem, 4vw, 1.75rem)", fontWeight: 400, color: "#1e293b", lineHeight: 1.25, letterSpacing: "-0.02em", marginBottom: 8 }}>{header.heading}</h1>
-          <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{header.subtext}</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{state ? `Resources for ${state}` : "Resources"}</p>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "clamp(1.4rem, 4vw, 1.75rem)", fontWeight: 400, color: "#1e293b", lineHeight: 1.25, letterSpacing: "-0.02em", marginBottom: 8 }}>{intro.heading}</h1>
+          <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>{intro.subtext}</p>
         </div>
 
-        {/* 1. Listing sites — always shown */}
+        {/* First home benefits */}
+        {isFirstHome && <div style={{ marginBottom: "1.25rem" }}><FirstHomeBenefits state={state} /></div>}
+
+        {/* Listing sites */}
         <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", marginBottom: "1rem", boxShadow: "0 4px 24px rgba(99,102,241,0.05)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🔎</div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>Where to search for homes</p>
-              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>The main platforms Australians use.</p>
-            </div>
+            <div><p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>Where to search for homes</p><p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>The main platforms Australians use.</p></div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {listingSites.map(site => (
               <a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 12, background: "#f8fafc", borderRadius: 12, padding: "10px 14px", border: "1px solid #f1f5f9", textDecoration: "none", transition: "background 0.15s ease" }} onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f1f5f9"} onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f8fafc"}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{site.emoji}</div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{site.name}</p>
-                  <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{site.desc}</p>
-                </div>
+                <div style={{ flex: 1 }}><p style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{site.name}</p><p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{site.desc}</p></div>
                 <span style={{ fontSize: 14, color: "#94a3b8" }}>↗</span>
               </a>
             ))}
           </div>
         </div>
 
-        {/* 2. First home benefits — first home buyers only */}
-        {isFirstHome && state && (
-          <div style={{ marginBottom: "1rem" }}>
-            <FirstHomeBenefits state={state} />
-          </div>
-        )}
-
-        {/* 3. Borrowing capacity — searching and buying */}
-        {(position === "searching" || position === "buying") && (
-          <a href="/serviceability" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", marginBottom: "1rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(99,102,241,0.05)", transition: "box-shadow 0.15s ease" }}
-            onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 6px 30px rgba(99,102,241,0.12)"}
-            onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 24px rgba(99,102,241,0.05)"}
-          >
-            <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #ede9fe, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🧮</div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 2px" }}>Serviceability calculator</p>
-              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Check your borrowing capacity using real bank methodology. Takes 2 minutes.</p>
-            </div>
-            <span style={{ fontSize: 18, color: "#6366f1" }}>→</span>
-          </a>
-        )}
-
-        {/* 4. Professionals + form — searching and buying */}
-        {showProfessionals && (
+        {/* Professionals + form */}
+        {visibleCategories.length > 0 && (
           submitted ? (
             <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "2rem", textAlign: "center", boxShadow: "0 4px 24px rgba(99,102,241,0.06)", marginBottom: "1rem" }}>
               <div style={{ width: 60, height: 60, borderRadius: "50%", margin: "0 auto 1rem", background: "linear-gradient(135deg, #d1fae5, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>✅</div>
@@ -289,7 +240,7 @@ export default function HouseNextStep() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: "1.25rem" }}>
                 {Array.from(selected).map(key => <span key={key} style={{ fontSize: 12, padding: "5px 12px", borderRadius: 99, background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe" }}>{CATEGORY_INFO[key].emoji} {CATEGORY_INFO[key].title}</span>)}
               </div>
-              <button onClick={() => router.push("/house/path")} style={{ padding: "10px 24px", borderRadius: 12, background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(99,102,241,0.2)", color: "#6366f1", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>Back to the home buying guide 🗺️</button>
+              <button onClick={() => router.push("/house/path")} style={{ padding: "10px 24px", borderRadius: 12, background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(99,102,241,0.2)", color: "#6366f1", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>Back to your path 🗺️</button>
             </div>
           ) : (
             <>
@@ -343,10 +294,13 @@ export default function HouseNextStep() {
           )
         )}
 
-        <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
-          ✦ Every professional on Arvogo has agreed to keep it low-pressure and honest.
-        </p>
+        {/* Calculator nudge */}
+        <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 16, padding: "1rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)", marginBottom: "1rem" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "#475569", marginBottom: 3 }}>Want to know your borrowing capacity first?</p>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}><a href="/serviceability" style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>Try the free serviceability calculator</a> — uses real bank methodology, takes 2 minutes.</p>
+        </div>
 
+        <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>✦ Every professional on Arvogo has agreed to keep it low-pressure and honest.</p>
       </div>
     </main>
   );
