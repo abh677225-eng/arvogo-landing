@@ -35,6 +35,18 @@ const DECISIONS = [
     badge: "Live",
     badgeBg: "linear-gradient(135deg, #059669, #10b981)",
   },
+  {
+    emoji: "🌏",
+    title: "Applying for a visa",
+    desc: "Find your pathway, check your points, and understand what documents you actually need.",
+    href: "/visa",
+    iconBg: "linear-gradient(135deg, #e0f2fe, #bae6fd)",
+    border: "rgba(14,165,233,0.2)",
+    shadow: "rgba(14,165,233,0.08)",
+    shadowHover: "rgba(14,165,233,0.14)",
+    badge: "Live",
+    badgeBg: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
+  },
 ];
 
 export default function Home() {
@@ -143,7 +155,7 @@ export default function Home() {
           padding: "1.25rem 1.5rem", marginBottom: "2rem",
         }}>
           <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.7, margin: 0 }}>
-            Arvogo is built for people in Australia navigating big life decisions. We help you understand your situation clearly — without advice, pressure, or jargon. More decisions coming soon.
+            Arvogo helps people in Australia navigate complex life decisions — whether you were born here or just arrived. We help you understand your situation clearly, without advice, pressure, or jargon. More decisions coming soon.
           </p>
         </div>
 
