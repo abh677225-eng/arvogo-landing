@@ -143,7 +143,7 @@ export default function Home() {
           padding: "1.25rem 1.5rem", marginBottom: "2rem",
         }}>
           <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.7, margin: 0 }}>
-            Arvogo is built for Australians navigating big life decisions. We help you understand your situation clearly — without advice, pressure, or jargon. More decisions coming soon.
+            Arvogo is built for people in Australia navigating big life decisions. We help you understand your situation clearly — without advice, pressure, or jargon. More decisions coming soon.
           </p>
         </div>
 
