@@ -10,6 +10,33 @@ const meshBg = `
   #eef2ff
 `;
 
+const DECISIONS = [
+  {
+    emoji: "🏡",
+    title: "Buying a home",
+    desc: "Get oriented on what comes first, what can wait, and how to avoid common overwhelm.",
+    href: "/house",
+    iconBg: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
+    border: "rgba(99,102,241,0.2)",
+    shadow: "rgba(99,102,241,0.1)",
+    shadowHover: "rgba(99,102,241,0.16)",
+    badge: "Live",
+    badgeBg: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+  },
+  {
+    emoji: "🚀",
+    title: "Starting a business",
+    desc: "Understand your structure, what to register, and what you can safely leave for later.",
+    href: "/business",
+    iconBg: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+    border: "rgba(16,185,129,0.2)",
+    shadow: "rgba(16,185,129,0.08)",
+    shadowHover: "rgba(16,185,129,0.14)",
+    badge: "Live",
+    badgeBg: "linear-gradient(135deg, #059669, #10b981)",
+  },
+];
+
 export default function Home() {
   const router = useRouter();
 
@@ -55,56 +82,58 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Single decision card */}
-        <div
-          onClick={() => router.push("/house")}
-          style={{
-            background: "rgba(255,255,255,0.88)",
-            backdropFilter: "blur(12px)",
-            borderRadius: 24,
-            border: "1.5px solid rgba(99,102,241,0.2)",
-            padding: "1.5rem",
-            cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 18,
-            boxShadow: "0 4px 32px rgba(99,102,241,0.1)",
-            marginBottom: "2rem",
-            transition: "transform 0.15s ease, box-shadow 0.15s ease",
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
-            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 40px rgba(99,102,241,0.16)";
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 32px rgba(99,102,241,0.1)";
-          }}
-        >
-          <div style={{
-            width: 60, height: 60, borderRadius: 18, flexShrink: 0,
-            background: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28,
-          }}>🏡</div>
+        {/* Decision cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: "2rem" }}>
+          {DECISIONS.map(d => (
+            <div
+              key={d.href}
+              onClick={() => router.push(d.href)}
+              style={{
+                background: "rgba(255,255,255,0.88)",
+                backdropFilter: "blur(12px)",
+                borderRadius: 24,
+                border: `1.5px solid ${d.border}`,
+                padding: "1.5rem",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 18,
+                boxShadow: `0 4px 32px ${d.shadow}`,
+                transition: "transform 0.15s ease, box-shadow 0.15s ease",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 8px 40px ${d.shadowHover}`;
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 32px ${d.shadow}`;
+              }}
+            >
+              <div style={{
+                width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+                background: d.iconBg,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28,
+              }}>{d.emoji}</div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <p style={{ fontWeight: 600, fontSize: 16, color: "#1e293b", margin: 0 }}>Buying your first home</p>
-              <span style={{
-                fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                color: "#fff", letterSpacing: "0.04em", textTransform: "uppercase",
-              }}>Live</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <p style={{ fontWeight: 600, fontSize: 16, color: "#1e293b", margin: 0 }}>{d.title}</p>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                    background: d.badgeBg, color: "#fff",
+                    letterSpacing: "0.04em", textTransform: "uppercase" as const,
+                  }}>{d.badge}</span>
+                </div>
+                <p style={{ fontSize: 13, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{d.desc}</p>
+              </div>
+
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                background: d.badgeBg,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontSize: 16,
+              }}>→</div>
             </div>
-            <p style={{ fontSize: 13, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
-              Get oriented on what usually comes first, what can wait, and how to avoid common overwhelm.
-            </p>
-          </div>
-
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontSize: 16,
-          }}>→</div>
+          ))}
         </div>
 
         {/* What Arvogo is */}
