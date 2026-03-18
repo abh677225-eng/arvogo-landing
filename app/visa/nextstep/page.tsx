@@ -387,8 +387,6 @@ export default function VisaNextStep() {
 
         </>)}
 
-        </>)}
-
         <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
           ✦ General information only — not migration advice. Always confirm your situation with a MARA-registered migration agent or at immi.homeaffairs.gov.au.
         </p>
