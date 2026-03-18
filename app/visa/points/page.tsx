@@ -59,14 +59,12 @@ const POINTS_CATEGORIES = [
   },
   {
     key: "education", label: "Educational qualifications",
-    hint: "Points for your highest qualification only. Masters by research may also qualify for the specialist education bonus below.",
+    hint: "Points awarded for your highest qualification only. Bachelor, Masters (coursework or research) all receive the same 15 pts. PhD receives 20 pts. Masters by research from an Australian institution in STEM/ICT may also qualify for the separate specialist bonus below.",
     options: [
       { label: "Select qualification", points: -1 },
       { label: "No recognised qualification", points: 0 },
       { label: "Diploma or trade qualification", points: 10 },
-      { label: "Bachelor degree", points: 15 },
-      { label: "Masters by coursework", points: 15 },
-      { label: "Masters by research", points: 15 },
+      { label: "Bachelor degree / Masters (coursework or research) / Honours", points: 15 },
       { label: "Doctorate (PhD)", points: 20 },
     ],
   },
@@ -80,20 +78,21 @@ const POINTS_CATEGORIES = [
   },
   {
     key: "specialist_education", label: "Specialist education qualification",
-    hint: "Masters by research or Doctorate in STEM, agriculture, health, or education",
+    hint: "Requires a Masters by research OR Doctorate from an Australian institution, with at least 2 academic years of study in Australia in STEM or ICT fields. Masters by coursework does NOT qualify. Confirm eligibility with a migration agent.",
     options: [
-      { label: "No", points: 0 },
-      { label: "Yes", points: 10 },
+      { label: "Select option", points: -1 },
+      { label: "No — or not from an Australian institution in STEM/ICT", points: 0 },
+      { label: "Yes — Masters by research or PhD, 2+ years at Australian institution in STEM/ICT", points: 10 },
     ],
   },
   {
     key: "partner", label: "Partner skills / status",
-    hint: "You get 10 pts if your partner has a skills assessment + competent English, OR if you have no partner / partner is an Australian citizen or PR.",
+    hint: "Two situations earn 10 pts: (A) your partner has a positive skills assessment + competent English, OR (B) you have no partner / your partner is an Australian citizen or PR.",
     options: [
       { label: "Select option", points: -1 },
-      { label: "Partner has skills assessment + competent English", points: 10 },
-      { label: "No partner, or partner is Australian citizen / PR", points: 10 },
-      { label: "Partner does not meet skills or English requirements", points: 0 },
+      { label: "(A) Partner has skills assessment + competent English — 10 pts", points: 10 },
+      { label: "(B) No partner, or partner is Australian citizen / PR — 10 pts", points: 10 },
+      { label: "Partner does not meet the above — 0 pts", points: 0 },
     ],
   },
   {
@@ -145,6 +144,7 @@ function getViabilityLabel(baseScore: number, visaBonus: number): { label: strin
 export default function VisaPointsCalculator() {
   const router = useRouter();
   const [scores, setScores] = useState<Record<string, number>>(DEFAULTS);
+  const [selectedLabels, setSelectedLabels] = useState<Record<string, string>>({});
 
   const baseScore = Object.values(scores).filter(v => v >= 0).reduce((a, b) => a + b, 0);
   const score189 = baseScore;
@@ -251,12 +251,17 @@ export default function VisaPointsCalculator() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <select
-                    value={scores[cat.key]}
-                    onChange={e => setScores(prev => ({ ...prev, [cat.key]: parseInt(e.target.value) }))}
+                    value={selectedLabels[cat.key] ?? ""}
+                    onChange={e => {
+                      const label = e.target.value;
+                      const opt = cat.options.find(o => o.label === label);
+                      setSelectedLabels(prev => ({ ...prev, [cat.key]: label }));
+                      setScores(prev => ({ ...prev, [cat.key]: opt ? opt.points : -1 }));
+                    }}
                     style={{ padding: "6px 10px", borderRadius: 8, border: `1.5px solid ${scores[cat.key] === -1 ? "#e2e8f0" : "#a5b4fc"}`, fontSize: 12, fontFamily: "inherit", background: scores[cat.key] === -1 ? "#f8fafc" : "#f5f3ff", color: scores[cat.key] === -1 ? "#94a3b8" : "#1e293b", outline: "none", maxWidth: 180 }}
                   >
                     {cat.options.map(opt => (
-                      <option key={opt.label} value={opt.points}>{opt.label}</option>
+                      <option key={opt.label} value={opt.label}>{opt.label}</option>
                     ))}
                   </select>
                   <span style={{ fontSize: 13, fontWeight: 700, color: scores[cat.key] > 0 ? "#6366f1" : scores[cat.key] === 0 ? "#94a3b8" : "#e2e8f0", minWidth: 36, textAlign: "right" }}>
