@@ -107,7 +107,7 @@ const PROFESSIONALS = [
     what: "Lodges visa applications on your behalf, advises on visa type and eligibility, and handles all Department of Home Affairs correspondence. Many migration firms also assist with institution selection and CoE for student visas — ask your agent.",
     when: "For any complex application — PR, family, employer sponsored. Working holiday and eVisitor/ETA you can usually do yourself.",
     cost: "From $500 (simple) to $5,000+ (PR/family). Free consultation typically available.",
-    costType: "paid" as const,
+    costType: "paid" as "free" | "paid",
     status: "essential" as const,
     statusNote: "Required for PR, family and employer sponsored",
     iconBg: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
