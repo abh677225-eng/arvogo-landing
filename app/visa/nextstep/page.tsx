@@ -107,7 +107,7 @@ const PROFESSIONALS = [
     what: "Lodges visa applications on your behalf, advises on visa type and eligibility, and handles all Department of Home Affairs correspondence. Many migration firms also assist with institution selection and CoE for student visas — ask your agent.",
     when: "For any complex application — PR, family, employer sponsored. Working holiday and eVisitor/ETA you can usually do yourself.",
     cost: "From $500 (simple) to $5,000+ (PR/family). Free consultation typically available.",
-    costType: "paid" as "free" | "paid",
+    costType: "paid" as const,
     status: "essential" as const,
     statusNote: "Required for PR, family and employer sponsored",
     iconBg: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
@@ -142,7 +142,6 @@ export default function VisaNextStep() {
   const [visible, setVisible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [checkedDocs, setCheckedDocs] = useState<Set<number>>(new Set());
   const [name, setName] = useState(""); const [email, setEmail] = useState("");
   const [phone, setPhone] = useState(""); const [message, setMessage] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(["agent"]));
@@ -158,7 +157,6 @@ export default function VisaNextStep() {
   const visibleProfessionals = PROFESSIONALS.filter(p => p.showFor.includes(category));
   const isValid = name.trim() && email.trim() && selected.size > 0;
 
-  function toggleDoc(i: number) { setCheckedDocs(prev => { const next = new Set(prev); if (next.has(i)) next.delete(i); else next.add(i); return next; }); }
   function togglePro(key: string) { setSelected(prev => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; }); }
 
   async function handleSubmit() {
@@ -216,25 +214,22 @@ export default function VisaNextStep() {
             <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📋</div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>{docsData.heading}</p>
-              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Tick off what you've gathered.</p>
+              <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Typical documents required for your application.</p>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {docsData.docs.map((doc, i) => {
-              const isChecked = checkedDocs.has(i);
-              return (
-                <div key={i} onClick={() => toggleDoc(i)} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: isChecked ? "#f0fdf4" : "#f8fafc", borderRadius: 12, padding: "9px 12px", border: `1px solid ${isChecked ? "#d1fae5" : "#f1f5f9"}`, cursor: "pointer", transition: "all 0.15s ease" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1, background: isChecked ? "#059669" : "#f1f5f9", border: isChecked ? "none" : "2px solid #d1fae5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#fff", transition: "all 0.15s ease" }}>{isChecked ? "✓" : ""}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: isChecked ? "#94a3b8" : "#1e293b", margin: 0, textDecoration: isChecked ? "line-through" : "none" }}>{doc.label}</p>
-                      <DocStatusBadge status={doc.status} />
-                    </div>
-                    <p style={{ fontSize: 11, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{doc.note}</p>
+            {docsData.docs.map((doc, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f1f5f9" }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, marginTop: 5, background: "#c7d2fe" }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#1e293b", margin: 0 }}>{doc.label}</p>
+                    <DocStatusBadge status={doc.status} />
                   </div>
+                  <p style={{ fontSize: 11, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{doc.note}</p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
           <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: "10px 0 0" }}>
             ✦ This list is a general guide only — requirements vary significantly by nationality, health history and individual circumstances. Always confirm your specific requirements with a migration agent or at{" "}
