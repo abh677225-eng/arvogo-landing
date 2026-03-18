@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.arvogo.com"),
@@ -7,17 +6,24 @@ export const metadata: Metadata = {
     default: "Arvogo — Simplifying Life's Complex Decisions",
     template: "%s | Arvogo",
   },
-  description: "Arvogo helps Australians navigate complex life decisions — from buying a home to understanding your financial position. No jargon, no pressure, no sign-up.",
+  description: "Arvogo helps people in Australia navigate complex life decisions — buying a home, starting a business, or applying for a visa. Understand where you are, what comes next, and who can help. No jargon, no pressure, no sign-up.",
   keywords: [
+    "life decisions Australia",
+    "buying a home Australia guide",
     "first home buyer Australia",
-    "should I buy a house Australia",
-    "am I ready to buy a home",
-    "home buying guide Australia",
+    "home buying process Australia",
     "borrowing capacity calculator Australia",
     "serviceability calculator",
-    "mortgage broker Melbourne",
-    "conveyancer Victoria",
-    "building inspection Melbourne",
+    "starting a business Australia",
+    "how to register a business Australia",
+    "ABN registration Australia",
+    "sole trader vs company Australia",
+    "Australian visa guide",
+    "Australia PR points calculator",
+    "student visa Australia",
+    "working holiday visa Australia",
+    "mortgage broker Australia",
+    "conveyancer Australia",
   ],
   authors: [{ name: "Arvogo" }],
   creator: "Arvogo",
@@ -28,7 +34,7 @@ export const metadata: Metadata = {
     url: "https://www.arvogo.com",
     siteName: "Arvogo",
     title: "Arvogo — Simplifying Life's Complex Decisions",
-    description: "Understand where you are, what comes next, and what you don't need to worry about yet.",
+    description: "Buying a home, starting a business, or applying for a visa — understand your situation clearly, without jargon or pressure.",
     images: [
       {
         url: "/og-image.png",
@@ -40,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Arvogo — Simplifying Life's Complex Decisions, Step by Step",
-    description: "Arvogo helps you navigate through complex life decisions — from buying a home to understanding your borrowing position. Get oriented in minutes. No jargon, no advice, no sign-up. Built for Australia.",
+    title: "Arvogo — Simplifying Life's Complex Decisions",
+    description: "Buying a home, starting a business, or applying for a visa — understand where you are, what comes next, and who can help. No jargon, no pressure.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -55,25 +61,21 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  // Replace with your actual Google Search Console verification code
-  // Get it from: search.google.com/search-console → Add property → HTML tag method
   verification: {
     google: "oIJ-9BjH8Z0-rLHSaAIzmGL3ujKZP8id2O-HoO7oaDg",
   },
 };
 
-// Organisation structured data — tells Google what Arvogo is
 const organisationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Arvogo",
   url: "https://www.arvogo.com",
-  description: "Arvogo helps Australians navigate complex life decisions — from buying a home to understanding their financial position.",
+  description: "Arvogo helps people in Australia navigate complex life decisions — buying a home, starting a business, or applying for a visa.",
   foundingLocation: "Melbourne, Australia",
   areaServed: "Australia",
 };
 
-// Website structured data — enables sitelinks search box in Google
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -87,7 +89,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-AU">
       <head>
-        {/* Structured data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organisationSchema) }}
