@@ -233,7 +233,7 @@ export default function VisaNextStep() {
   async function handleSubmit() {
     if (!isValid) return;
     setSubmitting(true);
-    await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, phone, message, categories: Array.from(selected), visaCategory: category, type: "visa" }) });
+    await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, phone, message, honeypot: "", categories: Array.from(selected), visaCategory: category, type: "visa" }) });
     setSubmitted(true); setSubmitting(false);
   }
 
@@ -367,6 +367,16 @@ export default function VisaNextStep() {
               </div>
               {selected.size > 0 && <div style={{ marginTop: "1rem", marginBottom: "1rem" }}><p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 6px" }}>Requesting introductions to:</p><div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{Array.from(selected).map(key => { const p = PROFESSIONALS.find(x => x.key === key); return p ? <span key={key} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 99, background: "#eef2ff", color: "#6366f1", border: "1px solid #c7d2fe" }}>{p.emoji} {p.title}</span> : null; })}</div></div>}
               {selected.size === 0 && <p style={{ fontSize: 12, color: "#f59e0b", margin: "1rem 0 0", textAlign: "center" }}>↑ Select at least one professional above</p>}
+
+                {/* Honeypot — hidden from humans, bots fill it in */}
+                <input
+                  type="text"
+                  name="website"
+                  defaultValue=""
+                  style={{ display: "none" }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
               <button onClick={handleSubmit} disabled={!isValid || submitting} style={{ width: "100%", padding: "13px", borderRadius: 12, marginTop: "1rem", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", border: "none", color: "#fff", fontSize: 14, fontWeight: 600, cursor: isValid ? "pointer" : "not-allowed", fontFamily: "inherit", opacity: isValid ? 1 : 0.45, boxShadow: isValid ? "0 4px 20px rgba(99,102,241,0.3)" : "none", transition: "opacity 0.15s ease" }}>
                 {submitting ? "Sending... ⏳" : "Request introductions ✦"}
               </button>
@@ -374,6 +384,8 @@ export default function VisaNextStep() {
             </div>
           </>
         )}
+
+        </>)}
 
         </>)}
 
