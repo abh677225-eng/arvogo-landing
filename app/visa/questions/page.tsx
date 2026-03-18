@@ -30,10 +30,6 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       key: "offer", text: "Have you received a letter of offer?", subtext: "This affects where you are in the process and what comes next.", emoji: "📄", type: "list",
       options: ["Not yet — still researching institutions", "Yes — I have a conditional or unconditional offer", "I'm already enrolled and need to extend my visa"],
     },
-    {
-      key: "location", text: "Where are you applying from?", subtext: "Applying onshore vs offshore typically involves different processes — confirm your options with a migration agent.", emoji: "📍", type: "list",
-      options: ["Offshore — applying from outside Australia", "Onshore — already in Australia on another visa"],
-    },
       {
       key: "location_current",
       text: "Are you currently in Australia?",
@@ -54,10 +50,6 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
     {
       key: "assessed", text: "Have you had your skills assessed?", subtext: "A positive skills assessment is required before you can submit an EOI.", emoji: "📋", type: "list",
       options: ["Yes — I have a positive skills assessment", "In progress — awaiting outcome", "No — not started yet", "Not sure if I need one"],
-    },
-    {
-      key: "location", text: "Where are you currently?", subtext: "This affects your visa options and processing pathways.", emoji: "📍", type: "list",
-      options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
     },
       {
       key: "location_current",
@@ -105,10 +97,6 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       key: "stream", text: "Which stream does your occupation fall under?", subtext: "Short-term and medium-term streams have different conditions.", emoji: "🔍", type: "list",
       options: ["Short-term stream (2yr visa, occupation on STSOL)", "Medium-term stream (4yr visa, occupation on MLTSSL)", "Labour agreement stream (special arrangement)", "Not sure — I don't know which list my occupation is on"],
     },
-    {
-      key: "location", text: "Where are you currently located?", subtext: "Your current visa status may affect your options — a migration agent can advise on your specific situation.", emoji: "📍", type: "list",
-      options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
-    },
       {
       key: "location_current",
       text: "Are you currently in Australia?",
@@ -154,10 +142,6 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
     {
       key: "status", text: "What is your sponsor's status in Australia?", subtext: "Sponsors must be Australian citizens, permanent residents, or eligible NZ citizens.", emoji: "🇦🇺", type: "list",
       options: ["Australian citizen", "Australian permanent resident", "Eligible New Zealand citizen", "Not sure of their exact status"],
-    },
-    {
-      key: "location", text: "Where are you currently located?", subtext: "Your location generally affects which application process applies — confirm with a migration agent.", emoji: "📍", type: "list",
-      options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
     },
       {
       key: "location_current",
