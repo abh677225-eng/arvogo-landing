@@ -313,12 +313,12 @@ export default function BusinessNextStep() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {GOV_REGISTRATIONS.map(reg => {
-                const statusCfg = {
-                  required:     { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0", label: "Required" },
-                  "if-over-75k":{ bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "If revenue >$75k" },
-                  recommended:  { bg: "#eef2ff", color: "#6366f1", border: "#c7d2fe", label: "Recommended" },
-                  "if-company": { bg: "#fef2f2", color: "#ef4444", border: "#fecaca", label: "If company only" },
-                }[reg.status];
+                const statusCfg = ({
+                  required:      { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0", label: "Required" },
+                  "if-over-75k": { bg: "#fffbeb", color: "#d97706", border: "#fde68a", label: "If revenue >$75k" },
+                  recommended:   { bg: "#eef2ff", color: "#6366f1", border: "#c7d2fe", label: "Recommended" },
+                  "if-company":  { bg: "#fef2f2", color: "#ef4444", border: "#fecaca", label: "If company only" },
+                } as Record<string, { bg: string; color: string; border: string; label: string }>)[reg.status] ?? { bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0", label: reg.status };
                 return (
                   <div key={reg.name} style={{ background: "#f8fafc", borderRadius: 12, padding: "10px 14px", border: "1px solid #f1f5f9" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
