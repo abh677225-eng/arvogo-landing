@@ -107,7 +107,7 @@ const PROFESSIONALS = [
     what: "Lodges visa applications on your behalf, advises on visa type and eligibility, and handles all Department of Home Affairs correspondence. Many migration firms also assist with institution selection and CoE for student visas — ask your agent.",
     when: "For any complex application — PR, family, employer sponsored. Working holiday and eVisitor/ETA you can usually do yourself.",
     cost: "From $500 (simple) to $5,000+ (PR/family). Free consultation typically available.",
-    costType: "paid" as "free" | "paid",
+    costType: "paid" as const,
     status: "essential" as const,
     statusNote: "Required for PR, family and employer sponsored",
     iconBg: "linear-gradient(135deg, #eef2ff, #e0e7ff)",
@@ -136,6 +136,68 @@ function DocStatusBadge({ status }: { status: "required" | "if-applicable" | "re
 
 type LeadForm = { name: string; email: string; phone: string; message: string };
 
+
+function OffshoreCard({ category }: { category: CategoryKey }) {
+  const isPR = category === "pr";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      {/* Info card */}
+      <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.5rem", boxShadow: "0 4px 24px rgba(99,102,241,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #eef2ff, #e0e7ff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🌏</div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 1px" }}>Applying from overseas</p>
+            <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Here's what's most useful for your situation.</p>
+          </div>
+        </div>
+        <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>
+          MARA-registered migration agents in Australia can work with clients overseas. The best way to find one is directly through the official MARA register, where you can search by visa type and language spoken.
+        </p>
+      </div>
+
+      {/* Find an agent */}
+      <a href="https://www.mara.gov.au" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg, rgba(238,242,255,0.95), rgba(224,231,255,0.95))", borderRadius: 20, border: "1.5px solid rgba(99,102,241,0.2)", padding: "1.25rem 1.5rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(99,102,241,0.08)" }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #e0e7ff, #c7d2fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>⚖️</div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#4338ca", margin: "0 0 2px" }}>Find a registered migration agent</p>
+          <p style={{ fontSize: 12, color: "#6366f1", margin: 0 }}>Search the official MARA register by visa type, location and language spoken.</p>
+        </div>
+        <span style={{ fontSize: 18, color: "#6366f1" }}>↗</span>
+      </a>
+
+      {/* PR points calculator */}
+      {isPR && (
+        <a href="/visa/points" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(99,102,241,0.05)" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #ede9fe, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🧮</div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 2px" }}>Points calculator</p>
+            <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Estimate your score across 189, 190 and 491 pathways — useful before speaking to an agent.</p>
+          </div>
+          <span style={{ fontSize: 18, color: "#6366f1" }}>→</span>
+        </a>
+      )}
+
+      {/* Full guide */}
+      <a href="/visa/guide" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(99,102,241,0.05)" }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📖</div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: "0 0 2px" }}>Full visa guide</p>
+          <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Step-by-step overview of the application process, documents and typical timelines.</p>
+        </div>
+        <span style={{ fontSize: 18, color: "#6366f1" }}>→</span>
+      </a>
+
+      {/* Immi link */}
+      <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 14, padding: "0.875rem 1.25rem", border: "1px solid rgba(255,255,255,0.8)" }}>
+        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+          For official visa requirements, fees and processing times:{" "}
+          <a href="https://www.immi.homeaffairs.gov.au" target="_blank" rel="noopener noreferrer" style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: 3 }}>immi.homeaffairs.gov.au ↗</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function VisaNextStep() {
   const router = useRouter();
   const [category, setCategory] = useState<CategoryKey>("pr");
@@ -146,9 +208,18 @@ export default function VisaNextStep() {
   const [phone, setPhone] = useState(""); const [message, setMessage] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(["agent"]));
 
+  const [isOnshore, setIsOnshore] = useState<boolean | null>(null);
+
   useEffect(() => {
     const cat = (sessionStorage.getItem("visaCategory") || "pr") as CategoryKey;
     setCategory(cat);
+    // Check last answer for onshore/offshore
+    const raw = sessionStorage.getItem("visaAnswers");
+    if (raw) {
+      const answers: string[] = JSON.parse(raw);
+      const locationAnswer = answers[answers.length - 1] || "";
+      setIsOnshore(locationAnswer.includes("currently in Australia"));
+    }
     setTimeout(() => setVisible(true), 100);
   }, []);
 
@@ -196,6 +267,12 @@ export default function VisaNextStep() {
           <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>Documents you'll need and professionals who can help — specific to your {meta.title.toLowerCase()} situation.</p>
         </div>
 
+        {/* Offshore users — show resources only, no lead form */}
+        {isOnshore === false && <OffshoreCard category={category} />}
+
+        {/* Onshore users — show full resources + lead form */}
+        {isOnshore === true && (<>
+
         {/* PR points link */}
         {category === "pr" && (
           <a href="/visa/points" style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg, rgba(238,242,255,0.95), rgba(224,231,255,0.95))", borderRadius: 20, border: "1.5px solid rgba(99,102,241,0.2)", padding: "1.25rem 1.5rem", marginBottom: "1rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(99,102,241,0.08)" }}>
@@ -207,8 +284,6 @@ export default function VisaNextStep() {
             <span style={{ fontSize: 18, color: "#6366f1" }}>→</span>
           </a>
         )}
-
-        {/* Documents checklist */}
         <div style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.9)", padding: "1.25rem 1.5rem", marginBottom: "1rem", boxShadow: "0 4px 24px rgba(99,102,241,0.05)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📋</div>
@@ -300,8 +375,12 @@ export default function VisaNextStep() {
           </>
         )}
 
+        </>)}
+
+        </>)}
+
         <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
-          ✦ General information only — not migration advice. Document requirements, fees and rules change. Always confirm your specific situation with a MARA-registered migration agent or at immi.homeaffairs.gov.au.
+          ✦ General information only — not migration advice. Always confirm your situation with a MARA-registered migration agent or at immi.homeaffairs.gov.au.
         </p>
       </div>
     </main>

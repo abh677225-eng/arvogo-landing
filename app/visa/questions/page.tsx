@@ -34,6 +34,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       key: "location", text: "Where are you applying from?", subtext: "Applying onshore vs offshore typically involves different processes — confirm your options with a migration agent.", emoji: "📍", type: "list",
       options: ["Offshore — applying from outside Australia", "Onshore — already in Australia on another visa"],
     },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
+    },
   ],
   pr: [
     {
@@ -47,6 +58,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
     {
       key: "location", text: "Where are you currently?", subtext: "This affects your visa options and processing pathways.", emoji: "📍", type: "list",
       options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
+    },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
     },
   ],
   visitor: [
@@ -62,6 +84,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       key: "nationality", text: "Are you from an eVisitor or ETA eligible country?", subtext: "Many nationalities can apply online in minutes for short stays.", emoji: "🛂", type: "list",
       options: ["Yes — EU, UK, USA or other eVisitor country", "Yes — passport eligible for ETA (Singapore, Japan, South Korea etc.)", "No — I need to apply for a standard visitor visa (600)", "Not sure"],
     },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
+    },
   ],
   sponsored: [
     {
@@ -75,6 +108,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
     {
       key: "location", text: "Where are you currently located?", subtext: "Your current visa status may affect your options — a migration agent can advise on your specific situation.", emoji: "📍", type: "list",
       options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
+    },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
     },
   ],
   whv: [
@@ -90,6 +134,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
       key: "previous", text: "Have you held a working holiday visa for Australia before?", subtext: "Second and third year visas require regional work to be completed first.", emoji: "🔄", type: "list",
       options: ["No — this would be my first", "Yes — I've had one before and want a second year", "Yes — I've had two and want a third year"],
     },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
+    },
   ],
   family: [
     {
@@ -103,6 +158,17 @@ const CATEGORY_QUESTIONS: Record<string, QuestionDef[]> = {
     {
       key: "location", text: "Where are you currently located?", subtext: "Your location generally affects which application process applies — confirm with a migration agent.", emoji: "📍", type: "list",
       options: ["Outside Australia", "In Australia on a temporary visa", "In Australia on a bridging visa"],
+    },
+      {
+      key: "location_current",
+      text: "Are you currently in Australia?",
+      subtext: "This helps us show you the most relevant resources and connections.",
+      emoji: "🇦🇺",
+      type: "list" as const,
+      options: [
+        "Yes — I am currently in Australia",
+        "No — I am applying from overseas",
+      ],
     },
   ],
 };
